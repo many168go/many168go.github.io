@@ -90,85 +90,6 @@ tr:hover td { background: #fafbfc; }
 .confirm-btns { display: flex; gap: 10px; justify-content: center; }
 input[type="number"] { -moz-appearance: textfield; }
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-/* ===== 手機響應式 RWD ===== */
-@media (max-width: 768px) {
-  /* 側邊欄改為底部導覽列 */
-  .sidebar {
-    width: 100% !important;
-    height: auto !important;
-    position: fixed !important;
-    left: 0 !important; bottom: 0 !important; top: auto !important;
-    flex-direction: row !important;
-    z-index: 200 !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    border-top: 1px solid rgba(255,255,255,0.15);
-  }
-  .sidebar-logo { display: none !important; }
-  .sidebar-logout { position: static !important; border-top: none !important; padding: 0 !important; }
-  .sidebar-nav {
-    display: flex !important;
-    flex-direction: row !important;
-    padding: 0 !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-  }
-  .nav-section { display: none !important; }
-  .nav-item {
-    flex-direction: column !important;
-    padding: 8px 10px !important;
-    font-size: 10px !important;
-    gap: 2px !important;
-    white-space: nowrap !important;
-    border-left: none !important;
-    border-top: 3px solid transparent !important;
-    min-width: 60px !important;
-    text-align: center !important;
-    justify-content: center !important;
-  }
-  .nav-item.active { border-top-color: #64b5f6 !important; border-left-color: transparent !important; }
-
-  /* 主內容區 */
-  .main {
-    margin-left: 0 !important;
-    padding: 12px 10px 80px 10px !important;
-  }
-  body.fb-loggedin .sidebar { top: auto !important; height: auto !important; }
-
-  /* 卡片格線 */
-  .cards-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-  .two-col { grid-template-columns: 1fr !important; gap: 10px !important; }
-  .form-grid { grid-template-columns: 1fr !important; }
-  .form-full { grid-column: 1 !important; }
-
-  /* 字體與間距 */
-  .page-title { font-size: 16px !important; }
-  .metric-value { font-size: 18px !important; }
-  .section-header { flex-wrap: wrap; gap: 6px; }
-  table { font-size: 11px !important; }
-  th, td { padding: 6px 6px !important; }
-
-  /* Topbar */
-  .topbar { flex-wrap: wrap; gap: 8px; }
-
-  /* Modal */
-  .modal { width: 95vw !important; padding: 16px !important; }
-
-  /* 狀態列 */
-  #fb-bar { font-size: 11px !important; padding: 4px 10px !important; }
-  body.fb-loggedin { padding-top: 24px !important; }
-}
-
-@media (max-width: 480px) {
-  .cards-grid { grid-template-columns: 1fr 1fr !important; }
-  .metric-card { padding: 10px !important; }
-  .metric-value { font-size: 15px !important; }
-  .metric-label { font-size: 10px !important; }
-  .btn { font-size: 12px !important; padding: 7px 12px !important; }
-}
 </style>
 <style>
 /* ===== 封面頁 ===== */
@@ -205,6 +126,12 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 body.fb-loggedin{padding-top:28px;}
 body.fb-loggedin .sidebar{top:28px;height:calc(100vh - 28px);}
 </style>
+<link rel="manifest" id="pwa-manifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="美雲財務">
+<link rel="apple-touch-icon" id="apple-touch-icon" href="">
 </head>
 <body>
 
@@ -214,8 +141,11 @@ body.fb-loggedin .sidebar{top:28px;height:calc(100vh - 28px);}
   <div id="fb-cover-box">
     <div id="fb-cover-title">💰 美雲財務<br>管理系統</div>
     <div id="fb-cover-sub">您的私人雲端財務管家</div>
-    <label id="fb-photo-label" for="fb-photo-input">🖼️ 點此更換封面照片</label>
-    <input type="file" id="fb-photo-input" accept="image/*" onchange="fbCoverPhoto(this)">
+    <div id="fb-cover-btn-wrap" style="display:none;text-align:center">
+      <label id="fb-photo-label" for="fb-photo-input">🖼️ 更換封面照片</label>
+      <input type="file" id="fb-photo-input" accept="image/*" onchange="fbCoverPhoto(this)">
+      <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px">建議尺寸：1920 × 1080 px（16:9橫式）</div>
+    </div>
     <div id="fb-login-panel">
       <input type="email" id="fb-email" placeholder="📧 電子郵件" autocomplete="username">
       <input type="password" id="fb-pw" placeholder="🔒 密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')fbLogin()">
@@ -621,6 +551,35 @@ body.fb-loggedin .sidebar{top:28px;height:calc(100vh - 28px);}
 <div id="page-settings" class="page">
   <div class="topbar"><div><div class="page-title">&#x2699;&#xFE0F; 後台設定</div><div class="page-subtitle">系統設定與資料重置</div></div></div>
   <div id="cfg-sys">
+
+    <!-- 封面照片設定 -->
+    <div class="section" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">🖼️ 封面照片設定</div></div>
+      <div class="section-body">
+        <div class="alert alert-info" style="margin-bottom:12px">建議尺寸：<strong>1920 × 1080 px</strong>（16:9 橫式），檔案格式 JPG / PNG</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label class="btn btn-primary btn-sm" for="cfg-cover-input" style="cursor:pointer">🖼️ 選擇封面照片</label>
+          <input type="file" id="cfg-cover-input" accept="image/*" style="display:none" onchange="fbCoverPhoto(this);document.getElementById('cfg-cover-saved').style.display='inline'">
+          <span id="cfg-cover-saved" style="font-size:12px;color:#2e7d32;display:none">✅ 已儲存</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP圖示設定 -->
+    <div class="section" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">📱 APP圖示設定（加入主畫面用）</div></div>
+      <div class="section-body">
+        <div class="alert alert-info" style="margin-bottom:12px">建議尺寸：<strong>512 × 512 px</strong>（正方形），檔案格式 PNG，上傳後需重新加入主畫面才會更新</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div id="cfg-icon-preview" style="width:64px;height:64px;border-radius:14px;background:#1a2035;border:2px solid #e8eaf0;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden">💰</div>
+          <div>
+            <label class="btn btn-primary btn-sm" for="cfg-icon-input" style="cursor:pointer;display:block;margin-bottom:6px">📱 選擇APP圖示</label>
+            <input type="file" id="cfg-icon-input" accept="image/png,image/jpeg" style="display:none" onchange="saveAppIcon(this)">
+            <span id="cfg-icon-saved" style="font-size:12px;color:#2e7d32;display:none">✅ 已儲存，請重新加入主畫面</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 信任裝置管理 -->
     <div class="section" style="margin-bottom:16px">
@@ -2057,6 +2016,66 @@ function fbShowForgotHint() {
   el.innerHTML = '&#x1F511; 提示：' + hint.replace(/\n/g, '<br>');
 }
 
+// =============================================
+// APP 圖示管理（PWA）
+// =============================================
+function saveAppIcon(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    // 儲存到 IndexedDB
+    fbIdbOpen().then(db => {
+      const tx = db.transaction('p', 'readwrite');
+      tx.objectStore('p').put({ id: 'appicon', data: url });
+      tx.oncomplete = () => {
+        document.getElementById('cfg-icon-saved').style.display = 'inline';
+        updatePWAIcon(url);
+      };
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function updatePWAIcon(url) {
+  // 更新預覽
+  const prev = document.getElementById('cfg-icon-preview');
+  if (prev) { prev.innerHTML = ''; const img = document.createElement('img'); img.src = url; img.style = 'width:100%;height:100%;object-fit:cover;border-radius:12px'; prev.appendChild(img); }
+  // 更新 apple-touch-icon
+  document.getElementById('apple-touch-icon').href = url;
+  // 動態產生 manifest
+  const manifest = {
+    name: '美雲財務管理系統',
+    short_name: '美雲財務',
+    start_url: './finance.html',
+    display: 'standalone',
+    background_color: '#1a2035',
+    theme_color: '#1a2035',
+    icons: [
+      { src: url, sizes: '192x192', type: 'image/png' },
+      { src: url, sizes: '512x512', type: 'image/png' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestUrl = URL.createObjectURL(blob);
+  document.getElementById('pwa-manifest').href = manifestUrl;
+}
+
+// 啟動時載入已存圖示
+fbIdbOpen().then(db => {
+  const r = db.transaction('p').objectStore('p').get('appicon');
+  r.onsuccess = e => {
+    if (e.target.result) updatePWAIcon(e.target.result.data);
+    else {
+      // 預設 manifest（無自訂圖示）
+      const manifest = { name:'美雲財務管理系統', short_name:'美雲財務', start_url:'./finance.html', display:'standalone', background_color:'#1a2035', theme_color:'#1a2035' };
+      const blob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
+      document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+    }
+  };
+}).catch(()=>{});
+
 init();
 
 // =============================================
@@ -2117,6 +2136,7 @@ function fbLogin() {
 // ---- 登入後進入系統 ----
 function fbEnter() {
   document.getElementById('fb-cover').style.display = 'none';
+  document.getElementById('fb-cover-btn-wrap').style.display = 'none'; // 登入後隱藏（進入系統後不需要）
   document.body.classList.add('fb-loggedin');
   fbBar('init', '🔄 正在從雲端下載資料...');
   fbDownload();
