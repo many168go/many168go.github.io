@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美雲財務管理系統 v4</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; }
+.sidebar { width: 220px; background: #1a2035; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-logout { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.15); background: #1a2035; }
+.sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo h1 { color: #fff; font-size: 16px; font-weight: 700; line-height: 1.4; }
+.sidebar-logo span { color: #64b5f6; font-size: 11px; }
+.sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; min-height: 0; }
+.nav-section { padding: 12px 16px 4px; color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 1px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; transition: all 0.2s; border-left: 3px solid transparent; }
+.nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.active { background: rgba(100,181,246,0.15); color: #64b5f6; border-left-color: #64b5f6; }
+.main { margin-left: 220px; flex: 1; padding: 20px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 700; color: #1a2035; }
+.page-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
+.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.2s; }
+.btn-primary { background: #1565c0; color: #fff; }
+.btn-primary:hover { background: #0d47a1; }
+.btn-outline { background: #fff; color: #1a2035; border: 1px solid #ddd; }
+.btn-danger { background: #c62828; color: #fff; font-size: 12px; padding: 6px 12px; }
+.btn-sm { font-size: 11px; padding: 5px 10px; }
+.btn-warn { background: #e65100; color: #fff; font-size: 12px; padding: 6px 12px; }
+.btn-success { background: #2e7d32; color: #fff; }
+.cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric-card { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e8eaf0; }
+.metric-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+.metric-value { font-size: 22px; font-weight: 700; }
+.metric-value.red { color: #c62828; }
+.metric-value.green { color: #2e7d32; }
+.metric-value.blue { color: #1565c0; }
+.metric-value.orange { color: #e65100; }
+.metric-sub { font-size: 11px; color: #888; margin-top: 4px; }
+.section { background: #fff; border-radius: 12px; border: 1px solid #e8eaf0; margin-bottom: 16px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #f0f2f5; }
+.section-title { font-size: 14px; font-weight: 700; color: #1a2035; }
+.section-body { padding: 16px 18px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 10px; background: #f8f9fb; color: #555; font-weight: 600; font-size: 12px; border-bottom: 1px solid #e8eaf0; }
+td { padding: 9px 10px; border-bottom: 1px solid #f5f5f5; color: #333; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbfc; }
+.td-red { color: #c62828; font-weight: 600; }
+.td-green { color: #2e7d32; font-weight: 600; }
+.td-actions { display: flex; gap: 6px; }
+.page { display: none; }
+.page.active { display: block; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; color: #555; font-weight: 600; }
+.form-group input, .form-group select { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; font-family: inherit; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #1565c0; }
+.form-full { grid-column: 1 / -1; }
+.alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 10px; }
+.alert-warning { background: #fff8e1; border: 1px solid #ffe082; color: #e65100; }
+.alert-info { background: #e3f2fd; border: 1px solid #90caf9; color: #1565c0; }
+.alert-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+.alert-danger { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+.tabs { display: flex; border-bottom: 2px solid #e8eaf0; margin-bottom: 16px; }
+.tab { padding: 10px 18px; font-size: 13px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tab.active { color: #1565c0; border-bottom-color: #1565c0; font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.summary-box { background: #f8f9fb; border-radius: 8px; padding: 14px; border: 1px solid #e8eaf0; }
+.sum-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+.sum-row.total { border-top: 1px solid #ddd; margin-top:6px; padding-top:10px; font-weight: 700; }
+.sum-row.red { color: #c62828; }
+.change-box { background: #fff3e0; border-radius: 8px; padding: 14px; border: 1px solid #ffe082; margin-top: 12px; }
+.change-box h4 { font-size: 13px; font-weight: 700; color: #e65100; margin-bottom: 8px; }
+.change-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+.change-row.result { font-weight: 700; color: #e65100; border-top: 1px solid #ffe082; margin-top: 4px; padding-top: 6px; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 24px; width: 480px; max-height: 85vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a2035; display: flex; justify-content: space-between; }
+.modal-close { cursor: pointer; font-size: 22px; color: #888; background: none; border: none; }
+.confirm-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.confirm-bg.open { display: flex; }
+.confirm-box { background: #fff; border-radius: 12px; padding: 24px; width: 340px; text-align: center; }
+.confirm-box h3 { margin-bottom: 10px; font-size: 16px; }
+.confirm-box p { font-size: 13px; color: #666; margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+</style>
+<style>
+/* ===== 封面頁 ===== */
+#fb-cover{position:fixed;inset:0;z-index:9999;background:#1a2035;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#fb-cover-photo{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;}
+#fb-cover-photo::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.45);}
+#fb-cover-box{position:relative;z-index:1;width:100%;max-width:340px;padding:0 20px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+#fb-cover-title{color:#fff;font-size:24px;font-weight:800;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,0.6);line-height:1.5;}
+#fb-cover-sub{color:#90caf9;font-size:12px;}
+#fb-photo-label{background:rgba(255,255,255,0.15);border:2px dashed rgba(255,255,255,0.4);border-radius:10px;padding:8px 18px;color:#fff;font-size:12px;cursor:pointer;font-family:inherit;}
+#fb-photo-label:hover{background:rgba(255,255,255,0.25);}
+#fb-photo-input{display:none;}
+#fb-login-panel{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:24px 20px;width:100%;box-sizing:border-box;}
+#fb-login-panel input{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:10px;background:rgba(255,255,255,0.15);color:#fff;}
+#fb-login-panel input::placeholder{color:rgba(255,255,255,0.6);}
+#fb-login-panel input:focus{outline:none;border-color:#64b5f6;}
+#fb-pw-wrap{position:relative;margin-bottom:10px;}
+#fb-pw-wrap #fb-pw{margin-bottom:0;padding-right:42px;}
+#fb-pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,0.65);padding:2px 5px;line-height:1;user-select:none;}
+#fb-pw-eye:hover{color:#fff;}
+#fb-err{color:#ff8a80;font-size:12px;text-align:center;min-height:16px;margin-bottom:6px;}
+#fb-login-btn{width:100%;padding:11px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:700;}
+#fb-login-btn:hover{background:#0d47a1;}
+/* ===== 狀態列 ===== */
+#fb-bar{position:fixed;top:0;left:0;right:0;z-index:9998;display:none;align-items:center;justify-content:center;gap:8px;padding:5px 14px;font-size:12px;font-family:'Microsoft JhengHei',sans-serif;}
+#fb-bar.st-init{background:#fff8e1;color:#e65100;border-bottom:1px solid #ffe082;}
+#fb-bar.st-ok{background:#e8f5e9;color:#2e7d32;border-bottom:1px solid #a5d6a7;}
+#fb-bar.st-err{background:#ffebee;color:#c62828;border-bottom:1px solid #ef9a9a;}
+#fb-bar.st-sync{background:#e3f2fd;color:#1565c0;border-bottom:1px solid #90caf9;}
+#fb-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:currentColor;}
+.st-init #fb-dot,.st-sync #fb-dot{animation:fbp 0.8s infinite;}
+@keyframes fbp{0%,100%{opacity:1}50%{opacity:0.2}}
+#fb-syncbtn{margin-left:8px;padding:2px 10px;font-size:11px;border-radius:10px;border:1px solid currentColor;cursor:pointer;background:transparent;color:inherit;font-family:inherit;}
+body.fb-loggedin{padding-top:28px;}
+body.fb-loggedin .sidebar{top:28px;height:calc(100vh - 28px);}
+</style>
+</head>
+<body>
+
+<!-- 封面頁 -->
+<div id="fb-cover">
+  <div id="fb-cover-photo"></div>
+  <div id="fb-cover-box">
+    <div id="fb-cover-title">💰 美雲財務<br>管理系統</div>
+    <div id="fb-cover-sub">您的私人雲端財務管家</div>
+    <label id="fb-photo-label" for="fb-photo-input">🖼️ 點此更換封面照片</label>
+    <input type="file" id="fb-photo-input" accept="image/*" onchange="fbCoverPhoto(this)">
+    <div id="fb-login-panel">
+      <input type="email" id="fb-email" placeholder="📧 電子郵件" autocomplete="username">
+      <div id="fb-pw-wrap">
+        <input type="password" id="fb-pw" placeholder="🔒 密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')fbLogin()">
+        <button type="button" id="fb-pw-eye" onclick="fbTogglePw()" title="顯示/隱藏密碼" tabindex="-1">👁️</button>
+      </div>
+      <div id="fb-err"></div>
+      <div id="fb-forgot-hint" style="display:none;background:rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13px;color:#fff;line-height:1.6"></div>
+      <div style="text-align:right;margin-bottom:8px">
+        <span id="fb-forgot-link" onclick="fbShowForgotHint()" style="color:#90caf9;font-size:12px;cursor:pointer;text-decoration:underline">🔐 忘記密碼？</span>
+      </div>
+      <button id="fb-login-btn" onclick="fbLogin()">登入</button>
+    </div>
+  </div>
+</div>
+<!-- 狀態列 -->
+<div id="fb-bar" class="st-init">
+  <span id="fb-dot"></span>
+  <span id="fb-msg">連接中...</span>
+  <button id="fb-syncbtn" onclick="fbUpload(true)">立即同步</button>
+</div>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>&#x1F4B0; 美雲財務<br>管理系統</h1>
+    <span>v4.0 完整版</span>
+  </div>
+  <div class="sidebar-nav" style="padding-bottom:52px;">
+    <div class="nav-section">主要功能</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">&#x1F4CA; 儀表板</div>
+    <div class="nav-item" onclick="showPage('salary5',this)">&#x1F4C5; 5日薪資管理</div>
+    <div class="nav-item" onclick="showPage('salary20',this)">&#x1F4C5; 20日薪資管理</div>
+    <div class="nav-section">記錄管理</div>
+    <div class="nav-item" onclick="showPage('monthly',this)">&#x1F4CB; 每月收支明細</div>
+    <div class="nav-item" onclick="showPage('reserve',this)">&#x1F4B0; 預備金管理</div>
+    <div class="nav-item" onclick="showPage('debt',this)">&#x1F4B8; 偉欠款明細</div>
+    <div class="nav-section">系統</div>
+    <div class="nav-item" onclick="showPage('settings',this)">&#x2699;&#xFE0F; 後台設定</div>
+  </div>
+  <div class="sidebar-logout">
+    <div class="nav-item" onclick="fbLogout()" style="color:#ef9a9a;">&#x1F511; 登出</div>
+  </div>
+</nav>
+<div class="main">
+
+<!-- 儀表板 -->
+<div id="page-dashboard" class="page active">
+  <div class="topbar">
+    <div><div class="page-title">&#x1F4CA; 儀表板總覽</div><div class="page-subtitle" id="today-date"></div></div>
+    <button class="btn btn-primary" onclick="refreshDashboard()">&#x1F504; 更新資料</button>
+  </div>
+  <div class="cards-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="metric-card"><div class="metric-label">&#x1F534; 偉目前欠款</div><div class="metric-value red" id="db-debt">計算中</div><div class="metric-sub">截至最新記錄</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C5; 本月5日薪資</div><div class="metric-value blue" id="db-sal5">-</div><div class="metric-sub" id="db-sal5-sub">本月5日~20日共幾天</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C5; 本月20日薪資</div><div class="metric-value blue" id="db-sal20" style="font-size:14px;color:#999">未輸入</div><div class="metric-sub" id="db-sal20-sub">21日~次月5日共幾天</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F7E2; 本月預估還款</div><div class="metric-value green" id="db-est-repay" style="font-size:14px">-</div><div class="metric-sub" id="db-est-repay-sub">5日+20日共還款合計</div></div>
+  </div>
+  <div class="two-col">
+    <div class="section">
+      <div class="section-header"><div class="section-title">&#x26A0;&#xFE0F; 系統提醒</div></div>
+      <div class="section-body">
+        <div class="alert alert-warning" id="db-mgmt-remind">&#x1F3E2; 管理費 $2,682</div>
+        <div class="alert alert-success" id="db-bank-remind">&#x1F4A1; 每月5日需存彰化銀行：$23,000（房貸$13,000＋車貸$10,000）</div>
+        <div class="alert alert-info">&#x1F3E6; 郵局存薄請至少保留 $10,000</div>
+        <div class="alert alert-warning">&#x1F4C5; 鳳信電視下次繳費：2026/06/21（$1,500）</div>
+        <div class="alert alert-danger">&#x1F4B8; 偉欠款：<strong id="db-debt-alert">$219,862</strong>，請持續追蹤還款</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">&#x1F4CB; 每月支出最近8筆</div><button class="btn btn-outline btn-sm" onclick="document.querySelector('[onclick*=monthly]').click()">查看全部</button></div>
+      <table><tr><th>日期</th><th>明細</th><th>收入</th><th>支出</th><th>餘額</th></tr><tbody id="db-monthly-body"></tbody></table>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><div class="section-title">&#x1F4B8; 偉欠款最近6筆</div><button class="btn btn-outline btn-sm" onclick="document.querySelector('[onclick*=debt]').click()">查看全部</button></div>
+    <table><tr><th>日期</th><th>明細</th><th>收入</th><th>支出</th><th>餘額</th></tr><tbody id="db-debt-body"></tbody></table>
+  </div>
+</div>
+
+<!-- 5日薪資 -->
+<div id="page-salary5" class="page">
+  <div class="topbar"><div><div class="page-title">&#x1F4C5; 5日薪資管理</div><div class="page-subtitle" id="s5-subtitle">每月5日～20日</div></div><div style="display:flex;gap:8px"><button class="btn btn-success" onclick="openLoadModal('5')">&#x1F4E5; 載入至收支明細</button><button class="btn btn-danger btn-sm" style="padding:8px 14px;font-size:13px" onclick="openDeleteModal('5')">&#x1F5D1; 刪除已載入</button></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('s5','input',0)">&#x1F4B0; 薪資輸入與計算</div>
+    <div class="tab" onclick="switchTab('s5','change',1)">&#x1FA99; 換零錢計算</div>
+  </div>
+  <div id="s5-input" class="tab-content active">
+    <div class="two-col">
+      <div class="section">
+        <div class="section-header"><div class="section-title">&#x1F4B0; 薪資與尚未換錢的天數</div></div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group form-full"><label>5日實際領薪金額（元）</label><input type="number" id="s5-salary" value="43749" oninput="autoSaveSettings();calcS5()"></div>
+            <div class="form-group form-full"><label>距上次領薪已過幾天（尚未換錢的天數）</label><input type="number" id="s5-elapsed" value="0" oninput="autoSaveSettings();calcS5()"></div>
+          </div>
+          <div class="alert alert-warning" style="margin-top:10px">&#x26A0;&#xFE0F; 若幾天後才去換錢，這幾天生活費（每天700元）會先從薪資扣除，影響換錢額度</div>
+          <button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="calcS5()">&#x1F522; 自動計算分配</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">&#x1F3E0; 固定支出（可修改）</div></div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group"><label>房貸</label><input type="number" id="s5-house" value="13000" oninput="autoSaveSettings();calcS5()"></div>
+            <div class="form-group"><label>車貸</label><input type="number" id="s5-car" value="10000" oninput="autoSaveSettings();calcS5()"></div>
+            <div class="form-group form-full"><label>管理費</label><input type="number" id="s5-mgmt" value="2682" oninput="autoSaveSettings();calcS5()"></div>
+            <div class="form-group form-full"><label>&#x1F4B0; 預備金（扣在生活費之前）</label><input type="number" id="s5-reserve" value="1000" oninput="autoSaveSettings();calcS5()"></div>
+            <div class="form-group form-full"><label>雲的生活費</label><input type="number" id="s5-living" value="4000" oninput="autoSaveSettings();calcS5()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="s5-result" class="section" style="display:none">
+      <div class="section-header"><div class="section-title">&#x1F4B0; 薪資分配明細</div></div>
+      <div class="section-body" id="s5-result-body"></div>
+    </div>
+  </div>
+  <div id="s5-change" class="tab-content">
+    <div class="section">
+      <div class="section-header"><div class="section-title">&#x1FA99; 5日薪資期換零錢計算（可修改）</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group"><label>使用天數</label><input type="number" id="c5-days" value="16" oninput="autoSaveSettings();calcC5()"></div>
+          <div class="form-group"><label>週六日油資次數</label><input type="number" id="c5-wk" value="2" oninput="autoSaveSettings();calcC5()"></div>
+          <div class="form-group"><label>100元 張數/天（可修改）</label><input type="number" id="c5-notes100" value="6" oninput="autoSaveSettings();calcC5()"></div>
+          <div class="form-group"><label>50元 個數/天（可修改）</label><input type="number" id="c5-coins50" value="2" oninput="autoSaveSettings();calcC5()"></div>
+          <div class="form-group form-full"><label>週六日油資金額/次（可修改，元）</label><input type="number" id="c5-oil-amt" value="1000" oninput="autoSaveSettings();calcC5()"></div>
+        </div>
+        <div class="change-box">
+          <h4>&#x1F4CB; 總需換零錢</h4>
+          <div class="change-row"><span>100元（<span id="c5-notes100-show">6</span>張/天）</span><span id="c5-100n">96張（$9,600）</span></div>
+          <div class="change-row"><span>50元（<span id="c5-coins50-show">2</span>個/天）</span><span id="c5-50n">32個（$1,600）</span></div>
+          <div class="change-row"><span>週六日油資 <span id="c5-oil-unit-show">$1,000</span>/次 × <span id="c5-wk-show">2</span>次</span><span id="c5-oil">$2,000</span></div>
+          <div id="c5-oil-500-row" class="change-row" style="display:none;color:#555"><span>　└ 其中500元紙鈔</span><span id="c5-oil-500-amt"></span></div>
+          <div id="c5-oil-1000-row" class="change-row" style="display:none;color:#555"><span>　└ 其中1000元紙鈔</span><span id="c5-oil-1000-amt"></span></div>
+          <div class="change-row result"><span>總計需換</span><span id="c5-tot">$13,200</span></div>
+        </div>
+        <div style="margin-top:16px;background:#e8f5e9;border-radius:8px;padding:14px;border:1px solid #a5d6a7">
+          <h4 style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:10px">&#x1F3E6; 目前已有零錢（輸入數量後自動計算）</h4>
+          <div class="form-grid">
+            <div class="form-group"><label>目前有100元（張）</label><input type="number" id="c5-have100" value="0" oninput="autoSaveSettings();calcC5()"></div>
+            <div class="form-group"><label>目前有50元（個）</label><input type="number" id="c5-have50" value="0" oninput="autoSaveSettings();calcC5()"></div>
+          </div>
+          <div class="change-box" style="background:#f0fff4;border-color:#a5d6a7;margin-top:10px">
+            <h4 style="color:#2e7d32">&#x1F4B1; 實際要去換的錢</h4>
+            <div id="c5-500b-row" class="change-row" style="display:none"><span>需補換500元</span><span id="c5-500b" style="color:#2e7d32;font-weight:700"></span></div>
+            <div class="change-row"><span>需補換100元</span><span id="c5-100b" style="color:#2e7d32;font-weight:700">96張（$9,600）</span></div>
+            <div class="change-row"><span>需補換50元</span><span id="c5-50b" style="color:#2e7d32;font-weight:700">32個（$1,600）</span></div>
+            <div class="change-row result" style="color:#2e7d32"><span>實際換錢金額</span><span id="c5-act">$13,200</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="s5-summary" class="tab-content">
+    <div class="section"><div class="section-header"><div class="section-title">&#x1F4CA; 5日支出分配總覽</div></div><div class="section-body"><div id="s5-sum-body"><p style="color:#888;text-align:center;padding:20px">請先至薪資輸入頁計算</p></div></div></div>
+  </div>
+</div>
+
+<!-- 20日薪資 -->
+<div id="page-salary20" class="page">
+  <div class="topbar"><div><div class="page-title">&#x1F4C5; 20日薪資管理</div><div class="page-subtitle" id="s20-subtitle">每月20日～次月5日</div></div><div style="display:flex;gap:8px"><button class="btn btn-success" onclick="openLoadModal('20')">&#x1F4E5; 載入至收支明細</button><button class="btn btn-danger btn-sm" style="padding:8px 14px;font-size:13px" onclick="openDeleteModal('20')">&#x1F5D1; 刪除已載入</button></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('s20','input',0)">&#x1F4B0; 薪資輸入與計算</div>
+    <div class="tab" onclick="switchTab('s20','change',1)">&#x1FA99; 換零錢計算</div>
+    <div class="tab" onclick="switchTab('s20','fixed',2)">&#x1F4F1; 電信費明細</div>
+  </div>
+  <div id="s20-input" class="tab-content active">
+    <div class="two-col">
+      <div class="section">
+        <div class="section-header"><div class="section-title">&#x1F4B0; 薪資與尚未換錢的天數</div></div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group form-full"><label>20日實際領薪金額（元）</label><input type="number" id="s20-salary" value="53667" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group form-full"><label>本月類型</label>
+              <select id="s20-mtype" onchange="calcS20()">
+                <option value="odd">單月（1,3,5,7,9,11月）</option>
+                <option value="even">雙月（2,4,6,8,10,12月）</option>
+              </select>
+            </div>
+            <div class="form-group form-full"><label>距上次領薪已過幾天（尚未換錢的天數）</label><input type="number" id="s20-elapsed" value="0" oninput="autoSaveSettings();calcS20()"></div>
+          </div>
+          <div id="s20-s5living-info" style="background:#fff3e0;border-radius:8px;padding:12px;margin-top:10px;border:1px solid #ffe082">
+            <p style="font-size:12px;color:#e65100;font-weight:700;margin-bottom:4px">&#x1F504; 上期（5日）雲的生活費狀況（自動帶入）</p>
+            <p id="s20-s5living-msg" style="font-size:13px;color:#555">請先至5日薪資管理頁面計算，資料會自動帶入。</p>
+          </div>
+          <button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="calcS20()">&#x1F522; 自動計算分配</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">&#x1F4A1; 固定支出（可修改）</div></div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group"><label>水費（單月8日）</label><input type="number" id="s20-water" value="600" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group"><label>電費（單月1日）</label><input type="number" id="s20-elec" value="5300" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group form-full"><label>瓦斯費（雙月6日）</label><input type="number" id="s20-gas" value="600" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group"><label>國泰保費-偉</label><input type="number" id="s20-inw" value="1275" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group"><label>國泰保費-雲</label><input type="number" id="s20-iny" value="2028" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group form-full"><label>&#x1F4B0; 預備金（扣在生活費之前）</label><input type="number" id="s20-reserve" value="1000" oninput="autoSaveSettings();calcS20()"></div>
+            <div class="form-group form-full"><label>雲的生活費</label><input type="number" id="s20-living" value="4000" oninput="autoSaveSettings();calcS20()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="s20-result" class="section" style="display:none">
+      <div class="section-header"><div class="section-title">&#x1F4B0; 薪資分配明細</div></div>
+      <div class="section-body" id="s20-result-body"></div>
+    </div>
+  </div>
+  <div id="s20-change" class="tab-content">
+    <div class="section">
+      <div class="section-header"><div class="section-title">&#x1FA99; 20日薪資期換零錢計算（可修改）</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group"><label>使用天數</label><input type="number" id="c20-days" value="15" oninput="autoSaveSettings();calcC20()"></div>
+          <div class="form-group"><label>週六日油資次數</label><input type="number" id="c20-wk" value="2" oninput="autoSaveSettings();calcC20()"></div>
+          <div class="form-group"><label>100元 張數/天（可修改）</label><input type="number" id="c20-notes100" value="6" oninput="autoSaveSettings();calcC20()"></div>
+          <div class="form-group"><label>50元 個數/天（可修改）</label><input type="number" id="c20-coins50" value="2" oninput="autoSaveSettings();calcC20()"></div>
+          <div class="form-group form-full"><label>週六日油資金額/次（可修改，元）</label><input type="number" id="c20-oil-amt" value="1000" oninput="autoSaveSettings();calcC20()"></div>
+        </div>
+        <div class="change-box">
+          <h4>&#x1F4CB; 總需換零錢</h4>
+          <div class="change-row"><span>100元（<span id="c20-notes100-show">6</span>張/天）</span><span id="c20-100n">90張（$9,000）</span></div>
+          <div class="change-row"><span>50元（<span id="c20-coins50-show">2</span>個/天）</span><span id="c20-50n">30個（$1,500）</span></div>
+          <div class="change-row"><span>週六日油資 <span id="c20-oil-unit-show">$1,000</span>/次 × <span id="c20-wk-show">2</span>次</span><span id="c20-oil">$2,000</span></div>
+          <div id="c20-oil-500-row" class="change-row" style="display:none;color:#555"><span>　└ 其中500元紙鈔</span><span id="c20-oil-500-amt"></span></div>
+          <div id="c20-oil-1000-row" class="change-row" style="display:none;color:#555"><span>　└ 其中1000元紙鈔</span><span id="c20-oil-1000-amt"></span></div>
+          <div class="change-row result"><span>總計需換</span><span id="c20-tot">$12,500</span></div>
+        </div>
+        <div style="margin-top:16px;background:#e8f5e9;border-radius:8px;padding:14px;border:1px solid #a5d6a7">
+          <h4 style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:10px">&#x1F3E6; 目前已有零錢</h4>
+          <div class="form-grid">
+            <div class="form-group"><label>目前有100元（張）</label><input type="number" id="c20-have100" value="0" oninput="autoSaveSettings();calcC20()"></div>
+            <div class="form-group"><label>目前有50元（個）</label><input type="number" id="c20-have50" value="0" oninput="autoSaveSettings();calcC20()"></div>
+          </div>
+          <div class="change-box" style="background:#f0fff4;border-color:#a5d6a7;margin-top:10px">
+            <h4 style="color:#2e7d32">&#x1F4B1; 實際要去換的錢</h4>
+            <div id="c20-500b-row" class="change-row" style="display:none"><span>需補換500元</span><span id="c20-500b" style="color:#2e7d32;font-weight:700"></span></div>
+            <div class="change-row"><span>需補換100元</span><span id="c20-100b" style="color:#2e7d32;font-weight:700">90張（$9,000）</span></div>
+            <div class="change-row"><span>需補換50元</span><span id="c20-50b" style="color:#2e7d32;font-weight:700">30個（$1,500）</span></div>
+            <div class="change-row result" style="color:#2e7d32"><span>實際換錢金額</span><span id="c20-act">$12,500</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="s20-fixed" class="tab-content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">&#x1F4F1; 電信費明細（可修改）</div>
+        <button class="btn btn-primary btn-sm" onclick="addTelDetailRow()">&#xFF0B; 新增</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="s20-tel-tbl">
+          <tr><th>電信業者</th><th>號碼/帳號</th><th>月費（元）</th><th>備註</th><th style="width:60px">操作</th></tr>
+          <tbody id="s20-tel-tbody">
+            <tr><td><input type="text" value="中華電信" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="796-9933" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="100" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="家用電話" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+            <tr><td><input type="text" value="中華電信" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="77Y177019" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="1159" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="家用網路" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+            <tr><td><input type="text" value="中華電信" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="0905-932-138" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="199" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+            <tr><td><input type="text" value="中華電信" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="0976-551-138" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="600" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+            <tr><td><input type="text" value="遠傳電信" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="0928-085-931" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="942" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+            <tr><td><input type="text" value="台灣大哥大" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="0989-279-589" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><input type="number" value="500" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td></tr>
+          </tbody>
+          <tfoot><tr style="background:#f8f9fb"><td colspan="2" style="text-align:right;font-weight:700;padding:9px 10px">月費合計</td><td style="color:#1565c0;font-weight:700;padding:9px 10px" id="s20-tel-total">$3,500</td><td colspan="2" style="font-size:11px;color:#888;padding:9px 10px">不含季繳鳳信</td></tr></tfoot>
+        </table>
+      </div>
+      <div style="padding:14px">
+        <div class="alert alert-warning">&#x26A0;&#xFE0F; 鳳信電視每季繳費 $1,500，下次繳費日：2026/06/21</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="s20-summary" class="tab-content">
+    <div class="section"><div class="section-header"><div class="section-title">&#x1F4CA; 20日支出分配總覽</div></div><div class="section-body"><div id="s20-sum-body"><p style="color:#888;text-align:center;padding:20px">請先至薪資輸入頁計算</p></div></div></div>
+  </div>
+</div>
+
+<!-- 偉欠款 -->
+<div id="page-debt" class="page">
+  <div class="topbar">
+    <div><div class="page-title">&#x1F4B8; 偉欠款明細</div><div class="page-subtitle">江兆偉借還款完整記錄</div></div>
+    <button class="btn btn-primary" onclick="openDebt(-1)">&#xFF0B; 新增記錄</button>
+  </div>
+  <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric-card"><div class="metric-label">&#x1F534; 目前欠款餘額</div><div class="metric-value red" id="dbt-bal">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F7E2; 已還款累計</div><div class="metric-value green" id="dbt-rep">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F535; 借款代付累計</div><div class="metric-value blue" id="dbt-bor">計算中</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&#x1F4CB; 欠款明細列表</div>
+      <input type="text" id="debt-srch" placeholder="&#x1F50D; 搜尋..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:180px" oninput="renderDebt()">
+    </div>
+    <!-- 查詢期間 -->
+    <div style="background:#f8f9fb;padding:12px 18px;border-bottom:1px solid #e8eaf0">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">快速查詢：</span>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="debt-quick" value="1" onchange="applyDebtQuick(1)"> 近1個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="debt-quick" value="2" onchange="applyDebtQuick(2)"> 近2個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="debt-quick" value="3" onchange="applyDebtQuick(3)"> 近3個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="debt-quick" value="6" onchange="applyDebtQuick(6)"> 近6個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="debt-quick" value="0" checked onchange="applyDebtQuick(0)"> 全部</label>
+      </div>
+      <div id="debt-quick-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">自訂查詢：</span>
+        <input type="date" id="debt-date-from" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <span style="font-size:12px">至</span>
+        <input type="date" id="debt-date-to" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <button class="btn btn-primary btn-sm" onclick="applyDebtCustom()">開始查詢</button>
+        <button class="btn btn-outline btn-sm" onclick="applyDebtQuick(0)">清除條件</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table><tr><th>日期</th><th>明細說明</th><th>收入（還款）</th><th>支出（借款）</th><th>餘額</th><th style="width:120px">操作</th></tr><tbody id="debt-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- 每月支出 -->
+<div id="page-monthly" class="page">
+  <div class="topbar">
+    <div><div class="page-title">&#x1F4CB; 每月收支明細</div><div class="page-subtitle">日常收支完整記錄</div></div>
+    <button class="btn btn-primary" onclick="openMonthly(-1)">&#xFF0B; 新增記錄</button>
+  </div>
+  <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric-card"><div class="metric-label">&#x1F4B5; 帳戶餘額</div><div class="metric-value green" id="mon-bal">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C8; <span id="mon-inc-label">本月</span>收入</div><div class="metric-value blue" id="mon-inc">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C9; <span id="mon-exp-label">本月</span>支出</div><div class="metric-value red" id="mon-exp">計算中</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&#x1F4CA; 收支明細列表</div>
+      <input type="text" id="mon-srch" placeholder="&#x1F50D; 搜尋..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:180px" oninput="renderMonthly()">
+    </div>
+    <div style="background:#f8f9fb;padding:12px 18px;border-bottom:1px solid #e8eaf0">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">快速查詢：</span>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="mon-quick" value="1" onchange="applyMonQuick(1)"> 近1個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="mon-quick" value="2" onchange="applyMonQuick(2)"> 近2個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="mon-quick" value="3" onchange="applyMonQuick(3)"> 近3個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="mon-quick" value="6" onchange="applyMonQuick(6)"> 近6個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="mon-quick" value="0" checked onchange="applyMonQuick(0)"> 全部</label>
+      </div>
+      <div id="mon-quick-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">自訂查詢：</span>
+        <input type="date" id="mon-date-from" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <span style="font-size:12px">至</span>
+        <input type="date" id="mon-date-to" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <button class="btn btn-primary btn-sm" onclick="applyMonCustom()">開始查詢</button>
+        <button class="btn btn-outline btn-sm" onclick="applyMonQuick(0)">清除條件</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table><tr><th>日期</th><th>明細說明</th><th>收入</th><th>支出</th><th>餘額</th><th style="width:120px">操作</th></tr><tbody id="mon-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- 預備金管理 -->
+<div id="page-reserve" class="page">
+  <div class="topbar">
+    <div><div class="page-title">&#x1F4B0; 預備金管理</div><div class="page-subtitle">每月5日及20日各自動預扣，可依情況調整</div></div>
+    <button class="btn btn-primary" onclick="openReserve(-1)">&#xFF0B; 新增記錄</button>
+  </div>
+  <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric-card"><div class="metric-label">&#x1F4B0; 預備金餘額</div><div class="metric-value green" id="rsv-bal">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C5; <span id="rsv-inc-label">本月</span>已存入</div><div class="metric-value blue" id="rsv-inc">計算中</div></div>
+    <div class="metric-card"><div class="metric-label">&#x1F4C9; <span id="rsv-exp-label">本月</span>已動用</div><div class="metric-value orange" id="rsv-exp">計算中</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&#x1F4CB; 預備金明細</div>
+      <input type="text" id="rsv-srch" placeholder="&#x1F50D; 搜尋..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:160px" oninput="renderReserve()">
+    </div>
+    <div style="background:#f8f9fb;padding:12px 18px;border-bottom:1px solid #e8eaf0">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">快速查詢：</span>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="rsv-quick" value="1" onchange="applyRsvQuick(1)"> 近1個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="rsv-quick" value="2" onchange="applyRsvQuick(2)"> 近2個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="rsv-quick" value="3" onchange="applyRsvQuick(3)"> 近3個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="rsv-quick" value="6" onchange="applyRsvQuick(6)"> 近6個月</label>
+        <label style="font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="rsv-quick" value="0" checked onchange="applyRsvQuick(0)"> 全部</label>
+      </div>
+      <div id="rsv-quick-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:#555;font-weight:700;white-space:nowrap">自訂查詢：</span>
+        <input type="date" id="rsv-date-from" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <span style="font-size:12px">至</span>
+        <input type="date" id="rsv-date-to" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+        <button class="btn btn-primary btn-sm" onclick="applyRsvCustom()">開始查詢</button>
+        <button class="btn btn-outline btn-sm" onclick="applyRsvQuick(0)">清除條件</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table><tr><th>日期</th><th>說明</th><th>存入</th><th>動用</th><th>餘額</th><th style="width:120px">操作</th></tr><tbody id="rsv-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- 後台設定 -->
+<div id="page-settings" class="page">
+  <div class="topbar"><div><div class="page-title">&#x2699;&#xFE0F; 後台設定</div><div class="page-subtitle">系統設定與資料重置</div></div></div>
+  <div id="cfg-sys">
+
+    <!-- 信任裝置管理 -->
+    <div class="section" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">&#x1F6E1;&#xFE0F; 信任裝置管理</div></div>
+      <div class="section-body">
+        <div class="alert alert-info" style="margin-bottom:12px">&#x2139;&#xFE0F; 目前已登入的裝置會自動記錄。只有「信任裝置」可以免帳密直接進入；其他裝置登入時一律需要輸入帳號與密碼。</div>
+        <div id="trusted-device-list" style="margin-bottom:12px"></div>
+        <button class="btn btn-primary btn-sm" onclick="trustThisDevice()">&#x2705; 信任目前這台裝置</button>
+        <span style="font-size:11px;color:#888;margin-left:8px">（最多允許2台：1台電腦＋1台手機）</span>
+      </div>
+    </div>
+
+    <!-- 忘記密碼提示設定 -->
+    <div class="section" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">&#x1F511; 忘記密碼提示設定</div></div>
+      <div class="section-body">
+        <div class="alert alert-warning" style="margin-bottom:12px">&#x26A0;&#xFE0F; 此提示會顯示在登入頁的「忘記密碼？」按鈕，僅供自己查看，請勿填入實際密碼。</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>提示文字（例：密碼是我的生日加上手機後4碼）</label>
+          <textarea id="cfg-forgot-hint" rows="3" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;width:100%;resize:vertical" placeholder="請輸入密碼提示（不要直接寫密碼）"></textarea>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="saveForgotHint()">&#x1F4BE; 儲存提示</button>
+        <span id="cfg-forgot-saved" style="font-size:12px;color:#2e7d32;margin-left:8px;display:none">✅ 已儲存</span>
+      </div>
+    </div>
+
+    <!-- 系統設定 -->
+    <div class="section">
+      <div class="section-header"><div class="section-title">&#x1F514; 系統設定</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group"><label>5日提醒時間</label><input type="time" value="19:00"></div>
+          <div class="form-group"><label>20日提醒時間</label><input type="time" value="19:00"></div>
+          <div class="form-group"><label>郵局最低存款提醒</label><input type="number" value="10000"></div>
+          <div class="form-group"><label>鳳信電視下次繳費日</label><input type="date" value="2026-06-21"></div>
+          <div class="form-group"><label>每日生活費100元（張數）</label><input type="number" value="6"></div>
+          <div class="form-group"><label>每日生活費50元（個數）</label><input type="number" value="2"></div>
+        </div>
+        <button class="btn btn-success" style="margin-top:10px" onclick="alert('已儲存系統設定！')">&#x1F4BE; 儲存設定</button>
+        <button class="btn btn-danger" style="margin-top:10px;margin-left:8px" onclick="confirmReset()">&#x1F5D1; 重置為預設資料</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- 載入 Modal -->
+<div id="load-modal" class="modal-bg">
+  <div class="modal" style="width:540px">
+    <h3><span id="load-modal-title">📥 載入至收支明細</span><button class="modal-close" onclick="closeM('load-modal')">&#x00D7;</button></h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:5px">選擇載入日期</label>
+      <input type="date" id="load-date" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:100%" onchange="updateLoadPreview()">
+    </div>
+    <div id="load-fengxin-row" style="background:#fff3e0;border-radius:8px;padding:10px;margin-bottom:12px;display:none">
+      <label style="font-size:13px;font-weight:700;color:#e65100;display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="load-fengxin" style="width:16px;height:16px" onchange="updateLoadPreview()"> 自動帶入鳳信電視季繳 $1,500
+      </label>
+      <div style="font-size:11px;color:#888;margin-top:4px;padding-left:24px">系統已判斷本月為鳳信繳費月</div>
+    </div>
+    <div style="font-size:12px;color:#555;font-weight:600;margin-bottom:6px">預覽將載入的明細（每筆獨立）：</div>
+    <div id="load-preview" style="background:#f8f9fb;border-radius:8px;padding:10px;font-size:12px;max-height:300px;overflow-y:auto;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeM('load-modal')">取消</button>
+      <button class="btn btn-success" onclick="confirmLoad()">&#x2705; 確認載入</button>
+    </div>
+  </div>
+</div>
+<!-- 刪除 Modal -->
+<div id="delete-modal" class="modal-bg">
+  <div class="modal" style="width:500px">
+    <h3><span id="delete-modal-title">🗑️ 刪除已載入資料</span><button class="modal-close" onclick="closeM('delete-modal')">&#x00D7;</button></h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:#555;font-weight:600;display:block;margin-bottom:5px">選擇要刪除的載入日期</label>
+      <select id="delete-date-sel" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:100%" onchange="updateDeletePreview()">
+        <option value="">-- 請選擇日期 --</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:#555;font-weight:600;margin-bottom:6px">將刪除以下明細：</div>
+    <div id="delete-preview" style="background:#fff5f5;border-radius:8px;padding:10px;font-size:12px;max-height:280px;overflow-y:auto;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeM('delete-modal')">取消</button>
+      <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()" disabled>&#x1F5D1; 確認刪除</button>
+    </div>
+  </div>
+</div>
+<!-- 預備金 Modal -->
+<div id="rsv-modal" class="modal-bg">
+  <div class="modal">
+    <h3><span id="rsv-mtitle">新增預備金記錄</span><button class="modal-close" onclick="closeM('rsv-modal')">&#x00D7;</button></h3>
+    <div class="form-grid">
+      <div class="form-group"><label>日期</label><input type="date" id="rm-date"></div>
+      <div class="form-group"><label>類型</label><select id="rm-type"><option value="in">存入（預扣）</option><option value="out">動用（支出）</option></select></div>
+      <div class="form-group form-full"><label>說明</label><input type="text" id="rm-desc" placeholder="例：5日薪資預扣、買衣服"></div>
+      <div class="form-group form-full"><label>金額（元）</label><input type="number" id="rm-amt"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeM('rsv-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveReserve()">&#x1F4BE; 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 偉欠款 Modal -->
+<div id="debt-modal" class="modal-bg">
+  <div class="modal">
+    <h3><span id="debt-mtitle">新增欠款記錄</span><button class="modal-close" onclick="closeM('debt-modal')">&#x00D7;</button></h3>
+    <div class="form-grid">
+      <div class="form-group"><label>日期</label><input type="date" id="dm-date"></div>
+      <div class="form-group"><label>類型</label><select id="dm-type"><option value="out">借款/代付</option><option value="in">還款</option></select></div>
+      <div class="form-group form-full"><label>明細說明</label><input type="text" id="dm-desc" placeholder="例：借款、購物代付、生活費未給"></div>
+      <div class="form-group form-full"><label>金額（元）</label><input type="number" id="dm-amt"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeM('debt-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveDebt()">&#x1F4BE; 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 每月支出 Modal -->
+<div id="mon-modal" class="modal-bg">
+  <div class="modal">
+    <h3><span id="mon-mtitle">新增收支明細</span><button class="modal-close" onclick="closeM('mon-modal')">&#x00D7;</button></h3>
+    <div class="form-grid">
+      <div class="form-group"><label>日期</label><input type="date" id="mm-date"></div>
+      <div class="form-group"><label>類型</label><select id="mm-type"><option value="out">支出</option><option value="in">收入</option></select></div>
+      <div class="form-group form-full"><label>明細說明</label><input type="text" id="mm-desc" placeholder="例：薪資、生活費、房貸"></div>
+      <div class="form-group form-full"><label>金額（元）</label><input type="number" id="mm-amt"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeM('mon-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveMonthly()">&#x1F4BE; 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 確認對話框 -->
+<div id="cfm-bg" class="confirm-bg">
+  <div class="confirm-box">
+    <h3 id="cfm-title">確認操作</h3>
+    <p id="cfm-msg">確定要執行嗎？</p>
+    <div class="confirm-btns">
+      <button class="btn btn-outline" onclick="document.getElementById('cfm-bg').classList.remove('open')">取消</button>
+      <button class="btn btn-danger" id="cfm-ok">確定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const F = n => '$' + Math.abs(n).toLocaleString('zh-TW');
+let debtData = [], monData = [], rsvData = [], debtEIdx = -1, monEIdx = -1, rsvEIdx = -1;
+let debtSortDesc = false, monSortDesc = false;
+let s5LivingShortfall = 0;
+let s5DebtPay = 0;
+let s20DebtPay = 0;
+const DK = 'mfDebt4', MK = 'mfMon4', RK = 'mfRsv4', CK = 'mfCfg4';
+
+function save() { try { localStorage.setItem(DK,JSON.stringify(debtData)); localStorage.setItem(MK,JSON.stringify(monData)); localStorage.setItem(RK,JSON.stringify(rsvData)); } catch(e){} }
+function load() { try { const d=localStorage.getItem(DK), m=localStorage.getItem(MK), r=localStorage.getItem(RK); if(d) debtData=JSON.parse(d); if(m) monData=JSON.parse(m); if(r) rsvData=JSON.parse(r); } catch(e){} }
+
+const debtDef = [
+  {d:'2024/01/14',desc:'安麗',i:0,e:18335,b:18335},{d:'2024/01/10',desc:'生活費未給',i:0,e:3000,b:21335},
+  {d:'2024/01/13',desc:'還款+生活費（富邦CD存現）',i:16000,e:0,b:5335},{d:'2024/02/27',desc:'艾多美',i:0,e:3545,b:8880},
+  {d:'2024/03/03',desc:'國泰人壽',i:0,e:1800,b:10680},{d:'2024/05/03',desc:'安麗',i:0,e:12291,b:22971},
+  {d:'2024/05/12',desc:'金融卡提',i:0,e:7005,b:29976},{d:'2024/06/08',desc:'金融卡提',i:0,e:10005,b:39981},
+  {d:'2024/06/18',desc:'安麗',i:0,e:1600,b:41581},{d:'2024/07/07',desc:'艾多美',i:0,e:1913,b:43494},
+  {d:'2024/07/15',desc:'生活費未給',i:0,e:3000,b:46494},{d:'2024/07/17',desc:'網路轉帳房貸',i:0,e:13015,b:59509},
+  {d:'2024/07/17',desc:'網路轉帳0001010960724711',i:0,e:7015,b:66524},{d:'2024/07/25',desc:'還款+生活費（富邦CD存現）',i:13000,e:0,b:53524},
+  {d:'2024/08/02',desc:'安麗',i:0,e:490,b:54014},{d:'2024/08/15',desc:'生活費未給',i:0,e:3000,b:57014},
+  {d:'2024/08/17',desc:'還款+生活費（富邦CD存現）',i:13000,e:0,b:44014},{d:'2024/08/25',desc:'安麗',i:0,e:1040,b:45054},
+  {d:'2024/10/04',desc:'安麗',i:0,e:2300,b:47354},{d:'2024/10/15',desc:'艾多美',i:0,e:3438,b:50792},
+  {d:'2024/10/15',desc:'生活費未給',i:0,e:4000,b:54792},{d:'2024/10/20',desc:'借款（10/20-11/5）',i:0,e:5000,b:59792},
+  {d:'2024/11/01',desc:'生活費未給',i:0,e:4000,b:63792},{d:'2024/11/06',desc:'金融卡提',i:0,e:6005,b:69797},
+  {d:'2024/11/17',desc:'還款',i:8000,e:0,b:61797},{d:'2024/11/17',desc:'生活費未給',i:0,e:4000,b:65797},
+  {d:'2024/11/20',desc:'網路轉帳-鍍膜+國泰機車險',i:0,e:19529,b:85326},{d:'2024/11/28',desc:'借款',i:0,e:5000,b:90326},
+  {d:'2024/12/02',desc:'生活費未給',i:0,e:4000,b:94326},{d:'2024/12/02',desc:'還款',i:20000,e:0,b:74326},
+  {d:'2024/12/02',desc:'給生活費',i:4000,e:0,b:70326},{d:'2024/12/17',desc:'生活費未給',i:0,e:4000,b:74326},
+  {d:'2025/01/01',desc:'還款',i:10000,e:0,b:64326},{d:'2025/01/01',desc:'生活費未給',i:0,e:4000,b:68326},
+  {d:'2025/01/01',desc:'給生活費',i:4000,e:0,b:64326},{d:'2025/01/12',desc:'借款',i:0,e:5000,b:69326},
+  {d:'2025/01/14',desc:'法院費+手續費+晚餐',i:0,e:3320,b:72646},{d:'2025/01/15',desc:'生活費未給',i:0,e:4000,b:76646},
+  {d:'2025/01/21',desc:'安麗',i:0,e:3700,b:80346},{d:'2025/01/27',desc:'艾多美',i:0,e:2695,b:83041},
+  {d:'2025/02/01',desc:'生活費未給',i:0,e:4000,b:87041},{d:'2025/02/04',desc:'清潔費+艾多美',i:0,e:7160,b:94201},
+  {d:'2025/02/04',desc:'哈姆洗澡+皮椅蠟乳',i:0,e:1800,b:96001},{d:'2025/02/05',desc:'還款',i:24850,e:0,b:71151},
+  {d:'2025/02/13',desc:'借款1萬',i:0,e:10000,b:81151},{d:'2025/02/16',desc:'安麗+菜市場+牛肉+全聯+VD扣款',i:0,e:16576,b:97727},
+  {d:'2025/02/17',desc:'還款',i:7160,e:0,b:90567},{d:'2025/02/25',desc:'艾多美',i:0,e:3545,b:94112},
+  {d:'2025/02/28',desc:'偉回恆春生活費',i:0,e:1000,b:95112},{d:'2025/03/03',desc:'淘寶衣服+全聯+湯圓',i:0,e:6500,b:101612},
+  {d:'2025/03/04',desc:'還款',i:22000,e:0,b:79612},{d:'2025/03/04',desc:'生活費未給',i:0,e:4000,b:83612},
+  {d:'2025/03/17',desc:'生活費未給+膠原蛋白4組',i:0,e:8000,b:91612},{d:'2025/03/25',desc:'金融卡提',i:0,e:30010,b:121622},
+  {d:'2025/04/01',desc:'還款',i:10000,e:0,b:111622},{d:'2025/04/01',desc:'生活費未給',i:0,e:4000,b:115622},
+  {d:'2025/04/14',desc:'清潔費',i:0,e:1515,b:117137},{d:'2025/04/14',desc:'哈姆洗澡',i:0,e:499,b:117636},
+  {d:'2025/04/17',desc:'還款',i:3000,e:0,b:114636},{d:'2025/04/17',desc:'生活費未給',i:0,e:4000,b:118636},
+  {d:'2025/05/02',desc:'還款',i:10000,e:0,b:108816},{d:'2025/05/02',desc:'生活費未給',i:0,e:4000,b:112816},
+  {d:'2025/05/12',desc:'購Fiona服飾',i:0,e:3565,b:116381},{d:'2025/05/12',desc:'借款',i:0,e:10000,b:126381},
+  {d:'2025/05/15',desc:'安麗',i:0,e:1880,b:128261},{d:'2025/05/17',desc:'生活費未給',i:0,e:4000,b:132261},
+  {d:'2025/06/01',desc:'還款',i:5000,e:0,b:127261},{d:'2025/06/01',desc:'生活費未給',i:0,e:4000,b:131261},
+  {d:'2025/06/15',desc:'清潔費+寵物3C+VD+美樂家',i:0,e:8133,b:139434},{d:'2025/06/17',desc:'還款',i:5000,e:0,b:134434},
+  {d:'2025/06/17',desc:'生活費未給',i:0,e:4000,b:138434},{d:'2025/06/18',desc:'東急屋',i:0,e:1357,b:139791},
+  {d:'2025/07/12',desc:'安麗+寵物3C',i:0,e:3305,b:143096},{d:'2025/07/15',desc:'金融卡提',i:0,e:10005,b:153101},
+  {d:'2025/07/29',desc:'艾多美+安麗',i:0,e:7140,b:160241},{d:'2025/07/31',desc:'生活費未給',i:0,e:4000,b:164241},
+  {d:'2025/08/05',desc:'買豬肉排骨',i:0,e:900,b:165141},{d:'2025/08/13',desc:'借款',i:0,e:3000,b:168141},
+  {d:'2025/08/17',desc:'生活費未給',i:0,e:4000,b:172141},{d:'2025/08/24',desc:'維修無人機+安麗',i:0,e:8305,b:180446},
+  {d:'2025/08/26',desc:'VD扣款清潔費',i:0,e:1410,b:181856},{d:'2025/09/01',desc:'生活費未給',i:0,e:4000,b:185856},
+  {d:'2025/09/10',desc:'金融卡提',i:0,e:10005,b:195861},{d:'2025/09/17',desc:'生活費未給',i:0,e:4000,b:199861},
+  {d:'2025/10/01',desc:'偉還1萬+還美蘭1萬=共還2萬',i:10000,e:0,b:189861},{d:'2025/10/02',desc:'生活費未給',i:0,e:4000,b:193861},
+  {d:'2025/10/10',desc:'上埔里借偉5000',i:0,e:5000,b:198861},{d:'2025/10/12',desc:'借款',i:0,e:2000,b:200861},
+  {d:'2025/10/16',desc:'還款',i:5000,e:0,b:195861},{d:'2025/10/16',desc:'生活費未給',i:0,e:4000,b:199861},
+  {d:'2025/10/26',desc:'購豬肉排骨春捲',i:0,e:1150,b:201011},{d:'2025/10/31',desc:'加油餐費生活費',i:0,e:3000,b:204011},
+  {d:'2025/11/01',desc:'還款',i:20000,e:0,b:184011},{d:'2025/11/01',desc:'生活費未給',i:0,e:4000,b:188011},
+  {d:'2025/11/10',desc:'我幫偉還美蘭國泰保費5623',i:0,e:5623,b:193634},{d:'2025/11/17',desc:'還款',i:5000,e:0,b:188634},
+  {d:'2025/11/17',desc:'生活費未給',i:0,e:4000,b:192634},{d:'2025/12/01',desc:'偉還3萬-漁會保費-還美蘭代繳=剩9496',i:9496,e:0,b:183138},
+  {d:'2025/12/01',desc:'生活費未給',i:0,e:4000,b:187138},{d:'2025/12/07',desc:'國泰保費郭美雲2029+江兆偉1283=3312',i:0,e:3312,b:190450},
+  {d:'2025/12/12',desc:'借款',i:0,e:1000,b:191450},{d:'2025/12/16',desc:'生活費未給',i:0,e:4000,b:195450},
+  {d:'2025/12/17',desc:'偉-精神損失費',i:0,e:4000,b:199450},{d:'2025/12/21',desc:'借款',i:0,e:1000,b:200450},
+  {d:'2025/12/24',desc:'偉回恆春沒錢借800',i:0,e:800,b:201250},{d:'2026/01/01',desc:'生活費未給',i:0,e:4000,b:205250},
+  {d:'2026/01/01',desc:'偉回恆春生活費',i:0,e:1000,b:206250},{d:'2026/01/04',desc:'國泰保費郭美雲2029+江兆偉1210=3239',i:0,e:3239,b:209489},
+  {d:'2026/01/17',desc:'還款',i:10000,e:0,b:199489},{d:'2026/01/17',desc:'生活費未給',i:0,e:4000,b:203489},
+  {d:'2026/01/22',desc:'安麗',i:0,e:1750,b:205239},{d:'2026/02/01',desc:'還款',i:10000,e:0,b:195239},
+  {d:'2026/02/01',desc:'生活費未給',i:0,e:4000,b:199239},{d:'2026/02/17',desc:'生活費未給',i:0,e:4000,b:203239},
+  {d:'2026/03/03',desc:'車子保養後生活費不夠借偉',i:0,e:3000,b:206239},{d:'2026/03/26',desc:'生活費未給',i:0,e:4000,b:210239},
+  {d:'2026/04/10',desc:'生活費未給',i:0,e:4000,b:214239},{d:'2026/04/26',desc:'生活費未給',i:0,e:4000,b:218239},
+  {d:'2026/04/30',desc:'4/10-4/20共11天每天700+2個週日500，借偉',i:0,e:8700,b:226939},
+  {d:'2026/05/11',desc:'生活費未給',i:0,e:4000,b:230939},{d:'2026/05/11',desc:'給4的生活費',i:8000,e:0,b:222939},
+  {d:'2026/05/11',desc:'還款',i:3077,e:0,b:219862}
+];
+
+const monDef = [
+  {d:'2026/04/13',desc:'薪資',i:33250,e:0,b:33250},{d:'2026/04/13',desc:'管理費',i:0,e:2682,b:30568},
+  {d:'2026/04/13',desc:'房貸',i:0,e:13000,b:17568},{d:'2026/04/13',desc:'車貸',i:0,e:10000,b:7568},
+  {d:'2026/04/14',desc:'生活費',i:0,e:700,b:6868},{d:'2026/04/15',desc:'清明節拜拜-水果850、餅乾228、哈姆圍攏348',i:0,e:1426,b:5442},
+  {d:'2026/04/15',desc:'生活費',i:0,e:700,b:4742},{d:'2026/04/16',desc:'生活費',i:0,e:700,b:4042},
+  {d:'2026/04/17',desc:'生活費',i:0,e:700,b:3342},{d:'2026/04/18',desc:'生活費',i:0,e:700,b:2642},
+  {d:'2026/04/18',desc:'全聯-購日用品',i:0,e:700,b:1942},{d:'2026/04/19',desc:'生活費',i:0,e:700,b:1242},
+  {d:'2026/04/20',desc:'生活費',i:0,e:700,b:542},{d:'2026/04/20',desc:'4/10-4/20借偉生活費',i:8700,e:0,b:9242},
+  {d:'2026/05/11',desc:'4/10-4/20共11天每天700+2個週日500',i:0,e:8700,b:542},
+  {d:'2026/05/11',desc:'偉-領薪日',i:53667,e:0,b:54209},{d:'2026/05/11',desc:'繳費-罰單',i:0,e:3000,b:51209},
+  {d:'2026/05/11',desc:'繳費-罰單',i:0,e:3500,b:47709},{d:'2026/05/11',desc:'牌照稅-MEZ-0685',i:0,e:800,b:46909},
+  {d:'2026/05/11',desc:'牌照稅-BWE-9855',i:0,e:7120,b:39789},{d:'2026/05/11',desc:'罰單7-11代收費',i:0,e:14,b:39775}
+];
+
+function getTWNow() {
+  // 取得台灣時間（UTC+8）的 Date 物件
+  const now = new Date();
+  const twnOffset = 8 * 60; // UTC+8 分鐘
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + twnOffset * 60000);
+}
+function calcPeriodDays(startDay, endDay) {
+  const now = getTWNow();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  return endDay - startDay + 1;
+}
+function calcS5Days() {
+  // 本月5日到20日，含頭含尾：5,6,7,...,20 = 16天
+  const now = getTWNow();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  const d5  = new Date(yr, mo, 5);
+  const d20 = new Date(yr, mo, 20);
+  const diff = Math.round((d20 - d5) / (1000*60*60*24)) + 1; // 含首尾
+  return diff; // 16天
+}
+function calcS20Days() {
+  // 本月20日到次月5日，含頭含尾
+  const now = getTWNow();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  const d20   = new Date(yr, mo, 20);
+  const dNext5 = new Date(yr, mo+1, 5);
+  const diff = Math.round((dNext5 - d20) / (1000*60*60*24)) + 1; // 含首尾
+  return diff; // 通常17天（含20日到次月5日）
+}
+
+function init() {
+  load();
+  if (!debtData.length) debtData = debtDef.map(r=>({date:r.d,desc:r.desc,income:r.i,expense:r.e,balance:r.b}));
+  if (!monData.length) monData = monDef.map(r=>({date:r.d,desc:r.desc,income:r.i,expense:r.e,balance:r.b}));
+  // 載入後重算排序與餘額，確保資料正確
+  sortAndRecalcMonthly();
+  sortAndRecalcDebt();
+  loadAllSavedSettings();
+  // 載入設定後同步計算換零錢顯示
+  calcC5();
+  calcC20();
+  const twNow = getTWNow();
+  document.getElementById('today-date').textContent = twNow.toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}) + '（台灣時間）';
+  const twDateStr = twNow.getFullYear()+'-'+(String(twNow.getMonth()+1).padStart(2,'0'))+'-'+(String(twNow.getDate()).padStart(2,'0'));
+  document.getElementById('dm-date').value = twDateStr;
+  document.getElementById('mm-date').value = twDateStr;
+  document.getElementById('rm-date').value = twDateStr;
+  const d5days = calcS5Days();
+  const d20days = calcS20Days();
+  const now = twNow;
+  document.getElementById('s5-subtitle').textContent = `每月5日～20日使用（本月共${d5days}天）`;
+  document.getElementById('s20-subtitle').textContent = `每月20日～次月5日使用（本月共${d20days}天）`;
+  document.getElementById('c5-days').value = d5days;
+  document.getElementById('c20-days').value = d20days;
+  const curMo = now.getMonth()+1;
+  document.getElementById('s20-mtype').value = (curMo%2===1)?'odd':'even';
+  refreshDashboard();
+}
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if (id==='debt') renderDebt();
+  if (id==='monthly') renderMonthly();
+  if (id==='reserve') renderReserve();
+  if (id==='dashboard') refreshDashboard();
+}
+
+function switchTab(pg, tab, idx) {
+  const allTabs = {
+    s5: ['input','change','summary'],
+    s20: ['input','change','fixed','summary'],
+    cfg: ['f5','f20','tel','sys','arch']
+  };
+  const names = allTabs[pg] || [];
+  names.forEach((n,i) => {
+    const tc = document.getElementById(pg+'-'+n);
+    if (tc) tc.classList.toggle('active', i===idx);
+  });
+  let container;
+  if (pg==='s5') container = document.getElementById('page-salary5');
+  else if (pg==='s20') container = document.getElementById('page-salary20');
+  else if (pg==='cfg') container = document.getElementById('page-settings');
+  if (container) {
+    container.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  }
+}
+
+function refreshDashboard() {
+  const last = debtData[debtData.length-1];
+  const bal = last ? last.balance : 219862;
+  document.getElementById('db-debt').textContent = F(bal);
+  document.getElementById('db-debt-alert').textContent = F(bal);
+  // 同步系統提醒：管理費 + 存彰化銀行金額（從5日設定讀取）
+  const house = parseInt(document.getElementById('s5-house').value)||13000;
+  const car   = parseInt(document.getElementById('s5-car').value)||10000;
+  const mgmt  = parseInt(document.getElementById('s5-mgmt').value)||2682;
+  const bankAmt = house + car;
+  const mgmtEl = document.getElementById('db-mgmt-remind');
+  const bankEl = document.getElementById('db-bank-remind');
+  if (mgmtEl) mgmtEl.innerHTML = `&#x1F3E2; 管理費 ${F(mgmt)}`;
+  if (bankEl) bankEl.innerHTML = `&#x1F4A1; 每月5日需存彰化銀行：${F(bankAmt)}（房貸${F(house)}＋車貸${F(car)}）`;
+  const s5val = parseInt(document.getElementById('s5-salary').value)||0;
+  const s20val = parseInt(document.getElementById('s20-salary').value)||0;
+  const d5d = calcS5Days();
+  const d20d = calcS20Days();
+  document.getElementById('db-sal5').textContent = s5val ? F(s5val) : '-';
+  document.getElementById('db-sal5-sub').textContent = `本月5日～20日共${d5d}天`;
+  document.getElementById('db-sal20').textContent = '未輸入';
+  document.getElementById('db-sal20').style.fontSize = '14px';
+  document.getElementById('db-sal20').style.color = '#999';
+  document.getElementById('db-sal20-sub').textContent = `21日～次月5日共${d20d}天`;
+  // 預估還款：5日+20日分項
+  if (s5DebtPay > 0 || s20DebtPay > 0) {
+    document.getElementById('db-est-repay').textContent = `共${F(s5DebtPay+s20DebtPay)}`;
+    document.getElementById('db-est-repay-sub').textContent = `5日${F(s5DebtPay)} ＋ 20日${F(s20DebtPay)}`;
+  } else if (s5val > 0) {
+    document.getElementById('db-est-repay').textContent = '無餘款';
+    document.getElementById('db-est-repay-sub').textContent = '5日+20日共還款合計';
+  } else {
+    document.getElementById('db-est-repay').textContent = '-';
+    document.getElementById('db-est-repay-sub').textContent = '5日+20日共還款合計';
+  }
+  const rd = debtData.slice(-6).reverse();
+  document.getElementById('db-debt-body').innerHTML = rd.map(r=>`<tr><td>${r.date}</td><td>${r.desc.length>18?r.desc.slice(0,18)+'...':r.desc}</td><td class="td-green">${r.income?F(r.income):''}</td><td class="td-red">${r.expense?F(r.expense):''}</td><td>${F(r.balance)}</td></tr>`).join('');
+  const rm = monData.slice(-8).reverse();
+  document.getElementById('db-monthly-body').innerHTML = rm.map(r=>`<tr><td>${r.date}</td><td>${r.desc.length>18?r.desc.slice(0,18)+'...':r.desc}</td><td class="td-green">${r.income?F(r.income):''}</td><td class="td-red">${r.expense?F(r.expense):''}</td><td>${F(r.balance)}</td></tr>`).join('');
+}
+
+// 查詢期間篩選狀態
+let debtDateFrom='', debtDateTo='';
+let monDateFrom='', monDateTo='';
+let rsvDateFrom='', rsvDateTo='';
+
+function monthsAgoStr(n) {
+  // 近N個月 = 從N個月前的1日到今天（例：近1個月=本月1日至今）
+  const d = new Date();
+  d.setMonth(d.getMonth() - (n - 1));
+  d.setDate(1);
+  return d.toISOString().split('T')[0].replace(/-/g,'/');
+}
+function todayStr() { return new Date().toISOString().split('T')[0].replace(/-/g,'/'); }
+
+function applyDebtQuick(n) {
+  if(n===0){debtDateFrom='';debtDateTo='';const t=document.getElementById('debt-quick-tags');if(t)t.innerHTML='';}
+  else{debtDateFrom=monthsAgoStr(n);debtDateTo=todayStr();buildQuickTags('debt-quick-tags',n,'#e3f2fd','#1565c0');}
+  renderDebt();
+}
+function applyDebtCustom() {
+  debtDateFrom=(document.getElementById('debt-date-from').value||'').replace(/-/g,'/');
+  debtDateTo=(document.getElementById('debt-date-to').value||'').replace(/-/g,'/');
+  if(!debtDateFrom||!debtDateTo){alert('請選擇查詢起訖日期');return;}
+  const t=document.getElementById('debt-quick-tags');
+  if(t) t.innerHTML=`<span style="background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:20px;font-size:11px">📅 ${debtDateFrom} ～ ${debtDateTo}</span>`;
+  renderDebt();
+}
+function applyMonQuick(n) {
+  if(n===0){monDateFrom='';monDateTo='';const t=document.getElementById('mon-quick-tags');if(t)t.innerHTML='';}
+  else{monDateFrom=monthsAgoStr(n);monDateTo=todayStr();buildQuickTags('mon-quick-tags',n,'#e8f5e9','#2e7d32');}
+  renderMonthly();
+}
+function applyMonCustom() {
+  monDateFrom=(document.getElementById('mon-date-from').value||'').replace(/-/g,'/');
+  monDateTo=(document.getElementById('mon-date-to').value||'').replace(/-/g,'/');
+  if(!monDateFrom||!monDateTo){alert('請選擇查詢起訖日期');return;}
+  const t=document.getElementById('mon-quick-tags');
+  if(t) t.innerHTML=`<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-size:11px">📅 ${monDateFrom} ～ ${monDateTo}</span>`;
+  renderMonthly();
+}
+function applyRsvQuick(n) {
+  if(n===0){rsvDateFrom='';rsvDateTo='';const t=document.getElementById('rsv-quick-tags');if(t)t.innerHTML='';}
+  else{rsvDateFrom=monthsAgoStr(n);rsvDateTo=todayStr();buildQuickTags('rsv-quick-tags',n,'#fff3e0','#e65100');}
+  renderReserve();
+}
+function applyRsvCustom() {
+  rsvDateFrom=(document.getElementById('rsv-date-from').value||'').replace(/-/g,'/');
+  rsvDateTo=(document.getElementById('rsv-date-to').value||'').replace(/-/g,'/');
+  if(!rsvDateFrom||!rsvDateTo){alert('請選擇查詢起訖日期');return;}
+  const t=document.getElementById('rsv-quick-tags');
+  if(t) t.innerHTML=`<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:20px;font-size:11px">📅 ${rsvDateFrom} ～ ${rsvDateTo}</span>`;
+  renderReserve();
+}
+function buildQuickTags(elId, n, bg, color) {
+  const el=document.getElementById(elId); if(!el) return;
+  const now=new Date(), months=[];
+  for(let i=0;i<n;i++){const d=new Date(now);d.setMonth(d.getMonth()-i);months.unshift(d.getFullYear()+'/'+(String(d.getMonth()+1).padStart(2,'0')));}
+  el.innerHTML=months.map(m=>`<span style="background:${bg};color:${color};padding:3px 10px;border-radius:20px;font-size:11px">${m}</span>`).join('');
+}
+function filterByDateRange(data, from, to) {
+  if(!from&&!to) return data;
+  return data.filter(r=>{
+    const d=r.date.replace(/\//g,'-');
+    const f=from.replace(/\//g,'-'), t=to.replace(/\//g,'-');
+    return (!f||d>=f)&&(!t||d<=t);
+  });
+}
+
+function renderDebt() {
+  const kw = document.getElementById('debt-srch').value.toLowerCase();
+  let data = filterByDateRange([...debtData], debtDateFrom, debtDateTo);
+  if (kw) data = data.filter(r=>r.desc.toLowerCase().includes(kw)||r.date.includes(kw));
+  document.getElementById('debt-tbody').innerHTML = data.map((r)=>{
+    const realIdx = debtData.indexOf(r);
+    return `<tr><td>${r.date}</td><td>${r.desc}</td><td class="td-green">${r.income?F(r.income):''}</td><td class="td-red">${r.expense?F(r.expense):''}</td><td>${F(r.balance)}</td><td><div class="td-actions"><button class="btn btn-warn btn-sm" onclick="openDebt(${realIdx})">修改</button><button class="btn btn-danger btn-sm" onclick="delDebt(${realIdx})">刪除</button></div></td></tr>`;
+  }).join('');
+  const last = debtData[debtData.length-1];
+  document.getElementById('dbt-bal').textContent = last?F(last.balance):'$0';
+  let rep=0,bor=0; debtData.forEach(r=>{rep+=r.income||0;bor+=r.expense||0;});
+  document.getElementById('dbt-rep').textContent = F(rep);
+  document.getElementById('dbt-bor').textContent = F(bor);
+}
+
+function buildMonthOptions() {
+  const sel = document.getElementById('mon-month-filter');
+  if (!sel) return;
+  const current = sel.value;
+  // 收集所有出現的年月
+  const months = new Set();
+  monData.forEach(r => {
+    const parts = r.date.split('/');
+    if (parts.length >= 2) months.add(parts[0]+'/'+parts[1].padStart(2,'0'));
+  });
+  const sorted = Array.from(months).sort().reverse();
+  sel.innerHTML = '<option value="all">全部月份</option>' +
+    sorted.map(m => `<option value="${m}" ${m===current?'selected':''}>${m}月份</option>`).join('');
+}
+
+// 每月收支：依日期排序，同日收入在前，並重算所有餘額
+function sortAndRecalcMonthly() {
+  monData.sort((a, b) => {
+    const da = a.date.replace(/\//g, '-');
+    const db = b.date.replace(/\//g, '-');
+    if (da !== db) return da < db ? -1 : 1;
+    // 同日：收入在前
+    if (a.income > 0 && b.income === 0) return -1;
+    if (a.income === 0 && b.income > 0) return 1;
+    return 0;
+  });
+  let bal = 0;
+  monData.forEach(r => {
+    bal = r.income ? bal + r.income : bal - r.expense;
+    r.balance = bal;
+  });
+}
+
+function renderMonthly() {
+  const kw = document.getElementById('mon-srch').value.toLowerCase();
+  let data = filterByDateRange([...monData], monDateFrom, monDateTo);
+  if (kw) data = data.filter(r=>r.desc.toLowerCase().includes(kw)||r.date.includes(kw));
+  document.getElementById('mon-tbody').innerHTML = data.map((r)=>{
+    const realIdx = monData.indexOf(r);
+    return `<tr><td>${r.date}</td><td>${cleanDesc(r.desc)}</td><td class="td-green">${r.income?F(r.income):''}</td><td class="td-red">${r.expense?F(r.expense):''}</td><td>${F(r.balance)}</td><td><div class="td-actions"><button class="btn btn-warn btn-sm" onclick="openMonthly(${realIdx})">修改</button><button class="btn btn-danger btn-sm" onclick="delMonthly(${realIdx})">刪除</button></div></td></tr>`;
+  }).join('');
+  const last = monData[monData.length-1];
+  document.getElementById('mon-bal').textContent = last?F(last.balance):'$0';
+  let inc=0,exp=0,labelText='本月';
+  const now = new Date();
+  const filteredData = (monDateFrom||monDateTo) ? data : monData.filter(r=>{const d=new Date(r.date.replace(/\//g,'-'));return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
+  filteredData.forEach(r=>{inc+=r.income||0;exp+=r.expense||0;});
+  if(monDateFrom||monDateTo) labelText=(monDateFrom||'')+'～'+(monDateTo||'');
+  document.getElementById('mon-inc').textContent = F(inc);
+  document.getElementById('mon-exp').textContent = F(exp);
+  document.getElementById('mon-inc-label').textContent = labelText;
+  document.getElementById('mon-exp-label').textContent = labelText;
+}
+
+function openDebt(idx) {
+  debtEIdx = idx;
+  document.getElementById('debt-modal').classList.add('open');
+  document.getElementById('debt-mtitle').textContent = idx>=0?'修改欠款記錄':'新增欠款記錄';
+  if (idx>=0) {
+    const r=debtData[idx];
+    document.getElementById('dm-date').value=r.date.replace(/\//g,'-');
+    document.getElementById('dm-desc').value=r.desc;
+    document.getElementById('dm-amt').value=r.income||r.expense;
+    document.getElementById('dm-type').value=r.income?'in':'out';
+  } else {
+    document.getElementById('dm-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('dm-desc').value='';
+    document.getElementById('dm-amt').value='';
+    document.getElementById('dm-type').value='out';
+  }
+}
+
+function saveDebt() {
+  const date=document.getElementById('dm-date').value.replace(/-/g,'/');
+  const desc=document.getElementById('dm-desc').value.trim();
+  const amt=parseInt(document.getElementById('dm-amt').value)||0;
+  const isIn=document.getElementById('dm-type').value==='in';
+  if (!desc||!amt){alert('請填寫明細和金額');return;}
+  const rec={date,desc,income:isIn?amt:0,expense:isIn?0:amt,balance:0};
+  if (debtEIdx>=0) debtData[debtEIdx]=rec; else debtData.push(rec);
+  // 偉欠款也依日期排序並重算餘額
+  sortAndRecalcDebt();
+  save(); closeM('debt-modal'); renderDebt(); refreshDashboard();
+}
+
+function delDebt(i) {
+  document.getElementById('cfm-title').textContent='確認刪除';
+  document.getElementById('cfm-msg').textContent='確定要刪除這筆欠款記錄嗎？';
+  document.getElementById('cfm-ok').onclick=()=>{debtData.splice(i,1);sortAndRecalcDebt();save();renderDebt();refreshDashboard();document.getElementById('cfm-bg').classList.remove('open');};
+  document.getElementById('cfm-bg').classList.add('open');
+}
+
+// 偉欠款依日期排序並重算餘額
+function sortAndRecalcDebt() {
+  debtData.sort((a,b)=>{
+    const da=a.date.replace(/\//g,'-'), db=b.date.replace(/\//g,'-');
+    return da<db?-1:da>db?1:0;
+  });
+  let bal=0;
+  debtData.forEach(r=>{
+    bal=r.income?bal-r.income:bal+r.expense;
+    r.balance=bal;
+  });
+}
+
+function openMonthly(idx) {
+  monEIdx = idx;
+  document.getElementById('mon-modal').classList.add('open');
+  document.getElementById('mon-mtitle').textContent = idx>=0?'修改收支明細':'新增收支明細';
+  if (idx>=0) {
+    const r=monData[idx];
+    document.getElementById('mm-date').value=r.date.replace(/\//g,'-');
+    document.getElementById('mm-desc').value=r.desc;
+    document.getElementById('mm-amt').value=r.income||r.expense;
+    document.getElementById('mm-type').value=r.income?'in':'out';
+  } else {
+    document.getElementById('mm-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('mm-desc').value='';
+    document.getElementById('mm-amt').value='';
+    document.getElementById('mm-type').value='out';
+  }
+}
+
+function saveMonthly() {
+  const date=document.getElementById('mm-date').value.replace(/-/g,'/');
+  const desc=document.getElementById('mm-desc').value.trim();
+  const amt=parseInt(document.getElementById('mm-amt').value)||0;
+  const isIn=document.getElementById('mm-type').value==='in';
+  if (!desc||!amt){alert('請填寫明細和金額');return;}
+  const rec={date,desc,income:isIn?amt:0,expense:isIn?0:amt,balance:0};
+  if (monEIdx>=0) monData[monEIdx]=rec; else monData.push(rec);
+  sortAndRecalcMonthly();
+  save(); closeM('mon-modal'); renderMonthly();
+  // 新增收入時，自動觸發預備金轉入
+  if (isIn && monEIdx<0) {
+    autoAddReserveFromIncome(date, desc, amt);
+  }
+}
+
+function delMonthly(i) {
+  document.getElementById('cfm-title').textContent='確認刪除';
+  document.getElementById('cfm-msg').textContent='確定要刪除這筆收支明細嗎？';
+  document.getElementById('cfm-ok').onclick=()=>{monData.splice(i,1);sortAndRecalcMonthly();save();renderMonthly();document.getElementById('cfm-bg').classList.remove('open');};
+  document.getElementById('cfm-bg').classList.add('open');
+}
+
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+
+function confirmReset() {
+  document.getElementById('cfm-title').textContent='重置資料';
+  document.getElementById('cfm-msg').textContent='確定要重置為預設資料嗎？所有自行新增的記錄將會清除！';
+  document.getElementById('cfm-ok').onclick=()=>{
+    debtData=debtDef.map(r=>({date:r.d,desc:r.desc,income:r.i,expense:r.e,balance:r.b}));
+    monData=monDef.map(r=>({date:r.d,desc:r.desc,income:r.i,expense:r.e,balance:r.b}));
+    rsvData=[];
+    save(); refreshDashboard(); document.getElementById('cfm-bg').classList.remove('open'); alert('已重置為預設資料');
+  };
+  document.getElementById('cfm-bg').classList.add('open');
+}
+
+function calcC5() {
+  const d=parseInt(document.getElementById('c5-days').value)||calcS5Days();
+  const w=parseInt(document.getElementById('c5-wk').value)||2;
+  const notes100=parseInt(document.getElementById('c5-notes100').value)||6;
+  const coins50=parseInt(document.getElementById('c5-coins50').value)||2;
+  const oilAmt=parseInt(document.getElementById('c5-oil-amt').value)||1000;
+  const n100=d*notes100, n50=d*coins50, oil=w*oilAmt;
+  const tot=n100*100+n50*50+oil;
+  document.getElementById('c5-notes100-show').textContent=notes100;
+  document.getElementById('c5-coins50-show').textContent=coins50;
+  document.getElementById('c5-oil-unit-show').textContent=F(oilAmt);
+  document.getElementById('c5-wk-show').textContent=w;
+  document.getElementById('c5-100n').textContent=n100+'張（'+F(n100*100)+'）';
+  document.getElementById('c5-50n').textContent=n50+'個（'+F(n50*50)+'）';
+  document.getElementById('c5-oil').textContent=F(oil);
+  document.getElementById('c5-tot').textContent=F(tot);
+  // 油資拆分顯示（若金額不是整千，拆出500元部分），置於油資行下方
+  const oil500row=document.getElementById('c5-oil-500-row');
+  const oil1000row=document.getElementById('c5-oil-1000-row');
+  let total500=0; // 油資中500元部分總金額
+  if (oilAmt % 1000 !== 0 && oilAmt > 0) {
+    const each1000=Math.floor(oilAmt/1000);
+    const each500=(oilAmt%1000)/500;
+    total500=w*each500*500;
+    if (each500>0) { oil500row.style.display=''; document.getElementById('c5-oil-500-amt').textContent=w+'次×'+F(each500*500)+'='+F(w*each500*500); } else { oil500row.style.display='none'; }
+    if (each1000>0) { oil1000row.style.display=''; document.getElementById('c5-oil-1000-amt').textContent=w+'次×'+F(each1000*1000)+'='+F(w*each1000*1000); } else { oil1000row.style.display='none'; }
+  } else { oil500row.style.display='none'; oil1000row.style.display='none'; total500=0; }
+  // 已有零錢計算
+  const h100=parseInt(document.getElementById('c5-have100').value)||0;
+  const h50=parseInt(document.getElementById('c5-have50').value)||0;
+  const b100=Math.max(0,n100-h100), b50=Math.max(0,n50-h50);
+  document.getElementById('c5-100b').textContent=b100+'張（'+F(b100*100)+'）';
+  document.getElementById('c5-50b').textContent=b50+'個（'+F(b50*50)+'）';
+  document.getElementById('c5-act').textContent=F(b100*100+b50*50+oil);
+  // 需補換500元（油資中500元面額部分）
+  const row500b=document.getElementById('c5-500b-row');
+  if (total500>0) {
+    row500b.style.display='';
+    const sheets500=total500/500;
+    document.getElementById('c5-500b').textContent=sheets500+'張（'+F(total500)+'）';
+  } else { row500b.style.display='none'; }
+  // 同步更新薪資分配明細裡的換零錢清單
+  if (document.getElementById('s5-result').style.display !== 'none') calcS5();
+}
+
+function calcC20() {
+  const d=parseInt(document.getElementById('c20-days').value)||calcS20Days();
+  const w=parseInt(document.getElementById('c20-wk').value)||2;
+  const notes100=parseInt(document.getElementById('c20-notes100').value)||6;
+  const coins50=parseInt(document.getElementById('c20-coins50').value)||2;
+  const oilAmt=parseInt(document.getElementById('c20-oil-amt').value)||1000;
+  const n100=d*notes100, n50=d*coins50, oil=w*oilAmt;
+  const tot=n100*100+n50*50+oil;
+  document.getElementById('c20-notes100-show').textContent=notes100;
+  document.getElementById('c20-coins50-show').textContent=coins50;
+  document.getElementById('c20-oil-unit-show').textContent=F(oilAmt);
+  document.getElementById('c20-wk-show').textContent=w;
+  document.getElementById('c20-100n').textContent=n100+'張（'+F(n100*100)+'）';
+  document.getElementById('c20-50n').textContent=n50+'個（'+F(n50*50)+'）';
+  document.getElementById('c20-oil').textContent=F(oil);
+  document.getElementById('c20-tot').textContent=F(tot);
+  // 油資拆分顯示
+  const oil500row=document.getElementById('c20-oil-500-row');
+  const oil1000row=document.getElementById('c20-oil-1000-row');
+  let total500=0;
+  if (oilAmt % 1000 !== 0 && oilAmt > 0) {
+    const each1000=Math.floor(oilAmt/1000);
+    const each500=(oilAmt%1000)/500;
+    total500=w*each500*500;
+    if (each500>0) { oil500row.style.display=''; document.getElementById('c20-oil-500-amt').textContent=w+'次×'+F(each500*500)+'='+F(w*each500*500); } else { oil500row.style.display='none'; }
+    if (each1000>0) { oil1000row.style.display=''; document.getElementById('c20-oil-1000-amt').textContent=w+'次×'+F(each1000*1000)+'='+F(w*each1000*1000); } else { oil1000row.style.display='none'; }
+  } else { oil500row.style.display='none'; oil1000row.style.display='none'; total500=0; }
+  const h100=parseInt(document.getElementById('c20-have100').value)||0;
+  const h50=parseInt(document.getElementById('c20-have50').value)||0;
+  const b100=Math.max(0,n100-h100), b50=Math.max(0,n50-h50);
+  document.getElementById('c20-100b').textContent=b100+'張（'+F(b100*100)+'）';
+  document.getElementById('c20-50b').textContent=b50+'個（'+F(b50*50)+'）';
+  document.getElementById('c20-act').textContent=F(b100*100+b50*50+oil);
+  // 需補換500元
+  const row500b=document.getElementById('c20-500b-row');
+  if (total500>0) {
+    row500b.style.display='';
+    document.getElementById('c20-500b').textContent=(total500/500)+'張（'+F(total500)+'）';
+  } else { row500b.style.display='none'; }
+  // 同步更新薪資分配明細裡的換零錢清單
+  if (document.getElementById('s20-result').style.display !== 'none') calcS20();
+}
+
+function calcS5() {
+  const salary=parseInt(document.getElementById('s5-salary').value)||0;
+  const elapsed=parseInt(document.getElementById('s5-elapsed').value)||0;
+  const house=parseInt(document.getElementById('s5-house').value)||0;
+  const car=parseInt(document.getElementById('s5-car').value)||0;
+  const mgmt=parseInt(document.getElementById('s5-mgmt').value)||0;
+  const reserve=parseInt(document.getElementById('s5-reserve').value)||1000;
+  const living=parseInt(document.getElementById('s5-living').value)||4000;
+  const bankFixed=house+car;
+  const allFixed=house+car+mgmt;
+  const elCost=elapsed*700;
+  const d5days=parseInt(document.getElementById('c5-days').value)||16;
+  const notes100=parseInt(document.getElementById('c5-notes100').value)||6;
+  const coins50=parseInt(document.getElementById('c5-coins50').value)||2;
+  const oilAmt=parseInt(document.getElementById('c5-oil-amt').value)||1000;
+  const wk5=parseInt(document.getElementById('c5-wk').value)||2;
+  const n100=d5days*notes100, n50=d5days*coins50, oilCost=wk5*oilAmt;
+  const changeNeed=n100*100+n50*50+oilCost;
+  let avail=salary-allFixed-elCost;
+  const changeAct=Math.min(changeNeed,Math.max(0,avail));
+  avail-=changeAct;
+  const reserveAct=Math.min(reserve,Math.max(0,avail));
+  avail-=reserveAct;
+  let livAct=0,livNote='',debtPay=0;
+  if (avail>=living){livAct=living;debtPay=avail-living;s5LivingShortfall=0;}
+  else if (avail>0){livAct=avail;s5LivingShortfall=living-avail;livNote='&#x26A0;&#xFE0F; 金額不足！只能給雲生活費'+F(avail)+'，差'+F(s5LivingShortfall)+'，20日補給雲';}
+  else {s5LivingShortfall=living;livNote='&#x26A0;&#xFE0F; 金額不足！無法給雲生活費，差'+F(s5LivingShortfall)+'，20日補給雲';}
+  s5DebtPay=debtPay;
+  // 預備金改由「每月收支明細」新增薪資收入時觸發，這裡不再呼叫
+  update20S5LivingInfo();
+  document.getElementById('db-sal5').textContent = F(salary);
+  if (s5DebtPay>0||s20DebtPay>0) {
+    document.getElementById('db-est-repay').textContent = `共${F(s5DebtPay+s20DebtPay)}`;
+    document.getElementById('db-est-repay-sub').textContent = `5日${F(s5DebtPay)} ＋ 20日${F(s20DebtPay)}`;
+  } else {
+    document.getElementById('db-est-repay').textContent = salary>0?'無餘款':'-';
+    document.getElementById('db-est-repay-sub').textContent = '5日+20日共還款合計';
+  }
+  const html=`<div class="two-col">
+    <div class="summary-box">
+      <div class="sum-row"><span>&#x1F4B0; 本期領薪</span><span class="td-green">${F(salary)}</span></div>
+      <div class="sum-row"><span>&#x1F3E0; 房貸</span><span>-${F(house)}</span></div>
+      <div class="sum-row"><span>&#x1F697; 車貸</span><span>-${F(car)}</span></div>
+      <div class="sum-row"><span>&#x1F3E2; 管理費</span><span>-${F(mgmt)}</span></div>
+      ${elapsed>0?`<div class="sum-row red"><span>&#x1F4C5; 距領薪${elapsed}天已用（每天$700）</span><span>-${F(elCost)}</span></div>`:''}
+      <div class="sum-row"><span>&#x1FA99; 換零錢</span><span>-${F(changeAct)}</span></div>
+      <div class="sum-row" style="color:#7b1fa2"><span>&#x1F4B0; 預備金預扣</span><span>-${F(reserveAct)}</span></div>
+      <div class="sum-row"><span>&#x1F469; 雲的生活費</span><span>-${F(livAct)}</span></div>
+      ${debtPay>0?`<div class="sum-row" style="color:#2e7d32"><span>&#x2705; 可還偉欠雲的款</span><span>${F(debtPay)}</span></div>`:''}
+      <div class="sum-row total"><span>結餘</span><span>${F(Math.max(0,salary-allFixed-elCost-changeAct-reserveAct-livAct))}</span></div>
+    </div>
+    <div>
+      ${livNote?`<div class="alert alert-warning">${livNote}</div>`:`<div class="alert alert-success">&#x2705; 雲的生活費 ${F(living)} 可正常給付</div>`}
+      ${debtPay>0?`<div class="alert alert-success">&#x2705; 本期可還偉欠雲的款：${F(debtPay)}</div>`:'<div class="alert alert-danger">&#x274C; 本期無餘款還雲</div>'}
+      <div class="alert alert-info">&#x1F3E6; 存入彰化銀行：${F(bankFixed)}（房貸${F(house)}＋車貸${F(car)}）</div>
+      <div class="alert alert-warning">&#x1F3E2; 管理費 ${F(mgmt)}</div>
+      <div class="change-box"><h4>&#x1F4B1; 換零錢清單（${d5days}天）</h4>
+        <div class="change-row"><span>100元×${n100}張</span><span>${F(n100*100)}</span></div>
+        <div class="change-row"><span>50元×${n50}個</span><span>${F(n50*50)}</span></div>
+        <div class="change-row"><span>週末油資×${wk5}次（每次${F(oilAmt)}）</span><span>${F(oilCost)}</span></div>
+        ${oilAmt%500===0&&oilAmt%1000!==0?`<div class="change-row" style="color:#7b1fa2"><span>　└ 其中需備500元</span><span>${wk5*((oilAmt%1000)/500)}張（${F(wk5*(oilAmt%1000))}）</span></div>`:''}
+        <div class="change-row result"><span>合計</span><span>${F(changeNeed)}</span></div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('s5-result').style.display='block';
+  document.getElementById('s5-result-body').innerHTML=html;
+  document.getElementById('s5-sum-body').innerHTML=html;
+  refreshDashboard(); // 同步系統提醒
+}
+
+function update20S5LivingInfo() {
+  const msg = document.getElementById('s20-s5living-msg');
+  if (!msg) return;
+  if (s5LivingShortfall > 0) {
+    msg.innerHTML = `<span style="color:#c62828;font-weight:700">&#x26A0;&#xFE0F; 上期5日雲的生活費短缺 ${F(s5LivingShortfall)}，本期20日需補給雲</span>`;
+  } else if (document.getElementById('s5-salary').value && parseInt(document.getElementById('s5-salary').value)>0) {
+    msg.innerHTML = `<span style="color:#2e7d32;font-weight:700">&#x2705; 上期5日雲的生活費已足額給付，本期無需補給</span>`;
+  } else {
+    msg.innerHTML = '請先至5日薪資管理頁面計算，資料會自動帶入。';
+  }
+}
+
+function calcS20() {
+  const salary=parseInt(document.getElementById('s20-salary').value)||0;
+  const elapsed=parseInt(document.getElementById('s20-elapsed').value)||0;
+  const mtype=document.getElementById('s20-mtype').value;
+  const water=mtype==='odd'?(parseInt(document.getElementById('s20-water').value)||0):0;
+  const elec=mtype==='odd'?(parseInt(document.getElementById('s20-elec').value)||0):0;
+  const gas=mtype==='even'?(parseInt(document.getElementById('s20-gas').value)||0):0;
+  const inw=parseInt(document.getElementById('s20-inw').value)||0;
+  const iny=parseInt(document.getElementById('s20-iny').value)||0;
+  const reserve=parseInt(document.getElementById('s20-reserve').value)||1000;
+  const living=parseInt(document.getElementById('s20-living').value)||4000;
+  const makeLiving=s5LivingShortfall;
+  // 電信費從明細表格讀取
+  let telecom=0;
+  document.querySelectorAll('#s20-tel-tbody [data-tel-amt]').forEach(inp=>{ telecom+=parseInt(inp.value)||0; });
+  if(telecom===0) telecom=100+1159+199+600+942+500;
+  const util=water+elec+gas;
+  const ins=inw+iny;
+  const fixed=util+telecom+ins;
+  const elCost=elapsed*700;
+  const d20days=parseInt(document.getElementById('c20-days').value)||15;
+  const notes100_20=parseInt(document.getElementById('c20-notes100').value)||6;
+  const coins50_20=parseInt(document.getElementById('c20-coins50').value)||2;
+  const oilAmt20=parseInt(document.getElementById('c20-oil-amt').value)||1000;
+  const wk20=parseInt(document.getElementById('c20-wk').value)||2;
+  const n100=d20days*notes100_20, n50=d20days*coins50_20, oilCost=wk20*oilAmt20;
+  const changeNeed=n100*100+n50*50+oilCost;
+  let avail=salary-fixed-elCost-makeLiving;
+  const changeAct=Math.min(changeNeed,Math.max(0,avail));
+  avail-=changeAct;
+  const reserveAct=Math.min(reserve,Math.max(0,avail));
+  avail-=reserveAct;
+  let livAct=0,livNote='',debtPay=0,cloudDebt=0;
+  if (avail>=living){livAct=living;debtPay=avail-living;s20DebtPay=debtPay;}
+  else if (avail>0){
+    livAct=avail; const shortfall2=living-avail;
+    s20DebtPay=0; cloudDebt=shortfall2;
+    livNote=`&#x26A0;&#xFE0F; 金額不足！只能給雲生活費${F(avail)}，差${F(shortfall2)}，將轉入偉欠雲款項`;
+  } else {
+    s20DebtPay=0; cloudDebt=living;
+    livNote=`&#x26A0;&#xFE0F; 金額不足！無法給雲生活費，${F(living)}全數轉入偉欠雲款項`;
+  }
+  // 預備金改由「每月收支明細」新增薪資收入時觸發，這裡不再呼叫
+  document.getElementById('db-sal20').textContent = F(salary);
+  if (s5DebtPay>0||s20DebtPay>0) {
+    document.getElementById('db-est-repay').textContent = `共${F(s5DebtPay+s20DebtPay)}`;
+    document.getElementById('db-est-repay-sub').textContent = `5日${F(s5DebtPay)} ＋ 20日${F(s20DebtPay)}`;
+  } else {
+    document.getElementById('db-est-repay').textContent = '-';
+    document.getElementById('db-est-repay-sub').textContent = '5日+20日共還款合計';
+  }
+  const html=`<div class="two-col">
+    <div class="summary-box">
+      <div class="sum-row"><span>&#x1F4B0; 本期領薪</span><span class="td-green">${F(salary)}</span></div>
+      ${util>0?`<div class="sum-row"><span>&#x1F4A1; 水電瓦斯費</span><span>-${F(util)}</span></div>`:''}
+      <div class="sum-row"><span>&#x1F4F1; 電信費合計</span><span>-${F(telecom)}</span></div>
+      <div class="sum-row"><span>&#x1F3E5; 國泰保費（偉+雲）</span><span>-${F(ins)}</span></div>
+      ${elapsed>0?`<div class="sum-row red"><span>&#x1F4C5; 距領薪${elapsed}天已用（每天$700）</span><span>-${F(elCost)}</span></div>`:''}
+      ${makeLiving>0?`<div class="sum-row red"><span>&#x1F504; 補上期5日雲生活費短缺</span><span>-${F(makeLiving)}</span></div>`:''}
+      <div class="sum-row"><span>&#x1FA99; 換零錢</span><span>-${F(changeAct)}</span></div>
+      <div class="sum-row" style="color:#7b1fa2"><span>&#x1F4B0; 預備金預扣</span><span>-${F(reserveAct)}</span></div>
+      <div class="sum-row"><span>&#x1F469; 雲的生活費</span><span>-${F(livAct)}</span></div>
+      ${debtPay>0?`<div class="sum-row" style="color:#2e7d32"><span>&#x2705; 可還偉欠雲的款</span><span>${F(debtPay)}</span></div>`:''}
+      ${cloudDebt>0?`<div class="sum-row red"><span>&#x1F4DD; 轉入偉欠雲款項</span><span>${F(cloudDebt)}</span></div>`:''}
+      <div class="sum-row total"><span>結餘</span><span>${F(Math.max(0,salary-fixed-elCost-makeLiving-changeAct-reserveAct-livAct))}</span></div>
+    </div>
+    <div>
+      ${livNote?`<div class="alert alert-warning">${livNote}</div>`:`<div class="alert alert-success">&#x2705; 雲的生活費可正常給付</div>`}
+      ${debtPay>0?`<div class="alert alert-success">&#x2705; 本期可還偉欠雲的款：${F(debtPay)}</div>`:'<div class="alert alert-danger">&#x274C; 本期無餘款還雲</div>'}
+      ${mtype==='odd'?`<div class="alert alert-info">&#x1F3E6; 存入郵局：水費${F(water)}+電費${F(elec)}=${F(water+elec)}</div>`:`<div class="alert alert-info">&#x1F3E6; 存入郵局：瓦斯費${F(gas)}</div>`}
+      <div class="alert alert-warning">&#x26A0;&#xFE0F; 鳳信電視季繳提醒：下次 2026/06/21 繳 $1,500</div>
+      <div class="change-box"><h4>&#x1F4B1; 換零錢清單（${d20days}天）</h4>
+        <div class="change-row"><span>100元×${n100}張</span><span>${F(n100*100)}</span></div>
+        <div class="change-row"><span>50元×${n50}個</span><span>${F(n50*50)}</span></div>
+        <div class="change-row"><span>週末油資×${wk20}次（每次${F(oilAmt20)}）</span><span>${F(oilCost)}</span></div>
+        ${oilAmt20%500===0&&oilAmt20%1000!==0?`<div class="change-row" style="color:#7b1fa2"><span>　└ 其中需備500元</span><span>${wk20*((oilAmt20%1000)/500)}張（${F(wk20*(oilAmt20%1000))}）</span></div>`:''}
+        <div class="change-row result"><span>合計</span><span>${F(changeNeed)}</span></div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('s20-result').style.display='block';
+  document.getElementById('s20-result-body').innerHTML=html;
+  document.getElementById('s20-sum-body').innerHTML=html;
+}
+
+function renderReserve() {
+  const kw = document.getElementById('rsv-srch').value.toLowerCase();
+  let data = filterByDateRange([...rsvData], rsvDateFrom, rsvDateTo);
+  if (kw) data = data.filter(r=>r.desc.toLowerCase().includes(kw)||r.date.includes(kw));
+  document.getElementById('rsv-tbody').innerHTML = data.map((r)=>{
+    const realIdx = rsvData.indexOf(r);
+    return `<tr><td>${r.date}</td><td>${cleanDesc(r.desc)}</td><td class="td-green">${r.income?F(r.income):''}</td><td class="td-red">${r.expense?F(r.expense):''}</td><td>${F(r.balance)}</td><td><div class="td-actions"><button class="btn btn-warn btn-sm" onclick="openReserve(${realIdx})">修改</button><button class="btn btn-danger btn-sm" onclick="delReserve(${realIdx})">刪除</button></div></td></tr>`;
+  }).join('');
+  const last = rsvData[rsvData.length-1];
+  document.getElementById('rsv-bal').textContent = last?F(last.balance):'$0';
+  let inc=0,exp=0,labelText='本月';
+  const now=new Date();
+  const filteredData=(rsvDateFrom||rsvDateTo)?data:rsvData.filter(r=>{const d=new Date(r.date.replace(/\//g,'-'));return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
+  filteredData.forEach(r=>{inc+=r.income||0;exp+=r.expense||0;});
+  if(rsvDateFrom||rsvDateTo) labelText=(rsvDateFrom||'')+'～'+(rsvDateTo||'');
+  document.getElementById('rsv-inc').textContent = F(inc);
+  document.getElementById('rsv-exp').textContent = F(exp);
+  document.getElementById('rsv-inc-label').textContent = labelText;
+  document.getElementById('rsv-exp-label').textContent = labelText;
+}
+
+function autoAddReserveFromIncome(date, desc, incomeAmt) {
+  // 從收入金額反推預備金金額：
+  // 讀取薪資計算頁面的預備金設定值
+  // 日份 <= 10 視為 5日薪資期，> 10 視為 20日薪資期
+  const day = parseInt((date.split('/')[2]||'1'), 10);
+  const is5th = day <= 10;
+  const reserveFieldId = is5th ? 's5-reserve' : 's20-reserve';
+  const reserveEl = document.getElementById(reserveFieldId);
+  const reserveAmt = reserveEl ? (parseInt(reserveEl.value)||1000) : 1000;
+  const period = is5th ? '5日' : '20日';
+  const rsvDesc = period + '薪資預扣預備金';
+  // 日期同步為薪資收入那天
+  const prev = rsvData.length ? rsvData[rsvData.length-1].balance : 0;
+  rsvData.push({date, desc:rsvDesc, income:reserveAmt, expense:0, balance:prev+reserveAmt});
+  save();
+  // 提示使用者
+  setTimeout(()=>{
+    alert(`✅ 已自動轉入預備金 $${reserveAmt.toLocaleString('zh-TW')}\n（${rsvDesc}，日期：${date}）`);
+  }, 100);
+}
+
+function autoAddReserve(amount, desc, salaryDate) {
+  // 保留此函式以免其他地方呼叫報錯，但預備金已改由 saveMonthly 觸發，此處不動作
+}
+
+function openReserve(idx) {
+  rsvEIdx = idx;
+  document.getElementById('rsv-modal').classList.add('open');
+  document.getElementById('rsv-mtitle').textContent = idx>=0?'修改預備金記錄':'新增預備金記錄';
+  if (idx>=0) {
+    const r=rsvData[idx];
+    document.getElementById('rm-date').value=r.date.replace(/\//g,'-');
+    document.getElementById('rm-desc').value=r.desc;
+    document.getElementById('rm-amt').value=r.income||r.expense;
+    document.getElementById('rm-type').value=r.income?'in':'out';
+  } else {
+    document.getElementById('rm-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('rm-desc').value='';
+    document.getElementById('rm-amt').value='';
+    document.getElementById('rm-type').value='in';
+  }
+}
+
+function saveReserve() {
+  const date=document.getElementById('rm-date').value.replace(/-/g,'/');
+  const desc=document.getElementById('rm-desc').value.trim();
+  const amt=parseInt(document.getElementById('rm-amt').value)||0;
+  const isIn=document.getElementById('rm-type').value==='in';
+  if (!desc||!amt){alert('請填寫說明和金額');return;}
+  const prev=rsvData.length?rsvData[rsvData.length-1].balance:0;
+  const newBal=isIn?prev+amt:prev-amt;
+  const rec={date,desc,income:isIn?amt:0,expense:isIn?0:amt,balance:newBal};
+  if (rsvEIdx>=0) rsvData[rsvEIdx]=rec; else rsvData.push(rec);
+  save(); closeM('rsv-modal'); renderReserve();
+}
+
+function delReserve(i) {
+  document.getElementById('cfm-title').textContent='確認刪除';
+  document.getElementById('cfm-msg').textContent='確定要刪除這筆預備金記錄嗎？';
+  document.getElementById('cfm-ok').onclick=()=>{rsvData.splice(i,1);save();renderReserve();document.getElementById('cfm-bg').classList.remove('open');};
+  document.getElementById('cfm-bg').classList.add('open');
+}
+
+function calcTelTotal() {
+  let total=0;
+  document.querySelectorAll('#s20-tel-tbody [data-tel-amt]').forEach(inp=>{ total+=parseInt(inp.value)||0; });
+  const el=document.getElementById('s20-tel-total');
+  if(el) el.textContent=F(total);
+}
+function addTelDetailRow() {
+  const tbody=document.getElementById('s20-tel-tbody');
+  const tr=document.createElement('tr');
+  const is='width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px';
+  tr.innerHTML=`<td><input type="text" placeholder="電信業者" style="${is}" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" placeholder="號碼/帳號" style="${is}" oninput="autoSaveSettings()"></td><td><input type="number" value="0" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" placeholder="備註" style="${is}" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td>`;
+  tbody.appendChild(tr);
+}
+
+// ===== 設定自動儲存系統（每次輸入即時存入localStorage）=====
+const SETTINGS_KEY = 'mfSettings5';
+
+function autoSaveSettings() {
+  try {
+    const saved = {};
+    ['s5-salary','s5-elapsed','s5-house','s5-car','s5-mgmt','s5-reserve','s5-living',
+     's20-salary','s20-elapsed','s20-mtype','s20-water','s20-elec','s20-gas','s20-inw','s20-iny','s20-reserve','s20-living',
+     'c5-days','c5-wk','c5-notes100','c5-coins50','c5-oil-amt',
+     'c20-days','c20-wk','c20-notes100','c20-coins50','c20-oil-amt'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) saved[id] = el.value;
+    });
+    // 電信費明細
+    const telRows = [];
+    document.querySelectorAll('#s20-tel-tbody tr').forEach(tr=>{
+      const inputs = tr.querySelectorAll('input');
+      if (inputs.length >= 3) telRows.push({carrier:inputs[0].value,number:inputs[1].value,amt:inputs[2].value,note:inputs[3]?inputs[3].value:''});
+    });
+    saved['telecom'] = telRows;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
+  } catch(e) {}
+}
+
+function loadAllSavedSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+    ['s5-salary','s5-elapsed','s5-house','s5-car','s5-mgmt','s5-reserve','s5-living',
+     's20-salary','s20-elapsed','s20-mtype','s20-water','s20-elec','s20-gas','s20-inw','s20-iny','s20-reserve','s20-living',
+     'c5-days','c5-wk','c5-notes100','c5-coins50','c5-oil-amt',
+     'c20-days','c20-wk','c20-notes100','c20-coins50','c20-oil-amt'
+    ].forEach(id => {
+      if (saved[id] !== undefined) { const el=document.getElementById(id); if(el) el.value=saved[id]; }
+    });
+    // 電信費明細還原
+    if (saved['telecom'] && saved['telecom'].length > 0) {
+      const tbody = document.getElementById('s20-tel-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        saved['telecom'].forEach(row => {
+          const is='width:100%;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px';
+          const tr = document.createElement('tr');
+          tr.innerHTML=`<td><input type="text" value="${row.carrier||''}" style="${is}" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="${row.number||''}" style="${is}" oninput="autoSaveSettings()"></td><td><input type="number" value="${row.amt||0}" data-tel-amt style="width:80px;padding:5px;border:1px solid #ddd;border-radius:6px;font-size:12px" oninput="autoSaveSettings();calcTelTotal()"></td><td><input type="text" value="${row.note||''}" style="${is}" oninput="autoSaveSettings()"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();autoSaveSettings();calcTelTotal()">刪除</button></td>`;
+          tbody.appendChild(tr);
+        });
+        calcTelTotal();
+      }
+    }
+  } catch(e) {}
+}
+
+function addCfgRow(cid) {
+  const c=document.getElementById(cid);
+  const d=document.createElement('div');
+  d.className='form-grid'; d.style.marginBottom='8px';
+  d.innerHTML='<div class="form-group"><label>項目名稱</label><input type="text" placeholder="新項目"></div><div class="form-group"><label>金額</label><input type="number" value="0"></div>';
+  c.appendChild(d);
+}
+
+function addTelRow() {
+  const t=document.getElementById('tel-tbl');
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td><input type="text" placeholder="電信業者" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:12px"></td><td><input type="text" placeholder="號碼" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:12px"></td><td><input type="number" value="0" style="width:70px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:12px"></td><td><input type="text" placeholder="備註" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:12px"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest(\'tr\').remove()">刪除</button></td>';
+  t.appendChild(tr);
+}
+
+// 顯示用：移除隱藏標記，只顯示乾淨的說明文字
+function cleanDesc(desc) {
+  if (!desc) return desc;
+  const idx = desc.indexOf('autoLoaded');
+  return idx >= 0 ? desc.substring(0, idx) : desc;
+}
+
+
+// ===== 載入 / 刪除 功能 =====
+const LOAD_TAG = '\u0002autoLoaded\u0003'; // 隱藏標記，用於識別由載入功能產生的記錄
+const FENGXIN_CYCLE_MONTHS = 3; // 鳳信電視季繳週期（月）
+
+let _loadPeriod = '5'; // 目前操作的期別
+
+// 取得鳳信下次繳費日字串 (yyyy-mm-dd)
+function getFengxinNextDate() {
+  // 從後台設定欄讀取，找 value 像 2026-xx-xx 的 date input
+  const inputs = document.querySelectorAll('input[type="date"]');
+  for (const inp of inputs) {
+    if (inp.value && inp.value.includes('-') && !inp.id.includes('from') && !inp.id.includes('to') && !inp.id.includes('date')) {
+      // 跳過 from/to 篩選器；找到設定裡的鳳信日期
+    }
+  }
+  // 直接從頁面提醒文字抓，或用預設值
+  const alertEls = document.querySelectorAll('.alert');
+  for (const el of alertEls) {
+    const m = el.textContent.match(/(\d{4}\/\d{2}\/\d{2})/);
+    if (m && el.textContent.includes('鳳信')) return m[1].replace(/\//g, '-');
+  }
+  return '2026-06-21'; // 預設值
+}
+
+// 判斷某載入日期（yyyy-mm-dd）是否應帶入鳳信電視
+function shouldLoadFengxin(dateStr) {
+  const fxStr = getFengxinNextDate(); // yyyy-mm-dd
+  if (!fxStr) return false;
+  const fxDate = new Date(fxStr);
+  const loadDate = new Date(dateStr);
+  // 同年同月就觸發（20日載入日期落在鳳信繳費月）
+  return loadDate.getFullYear() === fxDate.getFullYear() &&
+         loadDate.getMonth() === fxDate.getMonth();
+}
+
+// 取得電信費明細列表 [{carrier, number, amt, note}]
+function getTelRows() {
+  const rows = [];
+  document.querySelectorAll('#s20-tel-tbody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      const amt = parseInt(inputs[2].value) || 0;
+      if (amt > 0) rows.push({
+        carrier: inputs[0].value || '電信',
+        number: inputs[1].value || '',
+        amt,
+        note: inputs[3] ? inputs[3].value : ''
+      });
+    }
+  });
+  return rows;
+}
+
+// 建立要載入的項目陣列（每筆獨立）
+// 回傳 [{desc, income, expense, target:'mon'|'rsv'}]
+function buildLoadItems(period, dateStr) {
+  const items = [];
+  const d = new Date(dateStr);
+  const mtype = document.getElementById('s20-mtype').value; // 'odd'|'even'
+  const isOdd = mtype === 'odd';
+
+  if (period === '5') {
+    // --- 5日：薪資收入 ---
+    const sal = parseInt(document.getElementById('s5-salary').value) || 0;
+    if (sal > 0) items.push({desc: '薪資', income: sal, expense: 0, target: 'mon'});
+
+    // --- 固定支出：房貸、車貸、管理費 ---
+    const house = parseInt(document.getElementById('s5-house').value) || 0;
+    const car   = parseInt(document.getElementById('s5-car').value)   || 0;
+    const mgmt  = parseInt(document.getElementById('s5-mgmt').value)  || 0;
+    if (house > 0) items.push({desc: '房貸',  income: 0, expense: house, target: 'mon'});
+    if (car   > 0) items.push({desc: '車貸',  income: 0, expense: car,   target: 'mon'});
+    if (mgmt  > 0) items.push({desc: '管理費', income: 0, expense: mgmt, target: 'mon'});
+
+    // --- 電信費各明細（拆開） ---
+    getTelRows().forEach(r => {
+      const label = r.note ? `電信費-${r.carrier}(${r.note})` : `電信費-${r.carrier}${r.number ? '('+r.number+')' : ''}`;
+      items.push({desc: label, income: 0, expense: r.amt, target: 'mon'});
+    });
+
+    // --- 預備金 → 預備金管理 ---
+    const rsv5 = parseInt(document.getElementById('s5-reserve').value) || 0;
+    if (rsv5 > 0) items.push({desc: '5日薪資預扣預備金', income: rsv5, expense: 0, target: 'rsv'});
+
+  } else {
+    // --- 20日：薪資收入 ---
+    const sal20 = parseInt(document.getElementById('s20-salary').value) || 0;
+    if (sal20 > 0) items.push({desc: '薪資', income: sal20, expense: 0, target: 'mon'});
+
+    // --- 水電瓦斯（依單雙月）---
+    const water = parseInt(document.getElementById('s20-water').value) || 0;
+    const elec  = parseInt(document.getElementById('s20-elec').value)  || 0;
+    const gas   = parseInt(document.getElementById('s20-gas').value)   || 0;
+    if (isOdd) {
+      if (water > 0) items.push({desc: '水費',  income: 0, expense: water, target: 'mon'});
+      if (elec  > 0) items.push({desc: '電費',  income: 0, expense: elec,  target: 'mon'});
+    } else {
+      if (gas > 0)   items.push({desc: '瓦斯費', income: 0, expense: gas,  target: 'mon'});
+    }
+
+    // --- 國泰保費 ---
+    const inw = parseInt(document.getElementById('s20-inw').value) || 0;
+    const iny = parseInt(document.getElementById('s20-iny').value) || 0;
+    if (inw > 0) items.push({desc: '國泰保費-偉', income: 0, expense: inw, target: 'mon'});
+    if (iny > 0) items.push({desc: '國泰保費-雲', income: 0, expense: iny, target: 'mon'});
+
+    // --- 電信費各明細（拆開）---
+    getTelRows().forEach(r => {
+      const label = r.note ? `電信費-${r.carrier}(${r.note})` : `電信費-${r.carrier}${r.number ? '('+r.number+')' : ''}`;
+      items.push({desc: label, income: 0, expense: r.amt, target: 'mon'});
+    });
+
+    // --- 鳳信電視（自動判斷季繳月）---
+    if (shouldLoadFengxin(dateStr)) {
+      items.push({desc: '鳳信電視季繳', income: 0, expense: 1500, target: 'mon'});
+    }
+
+    // --- 預備金 → 預備金管理 ---
+    const rsv20 = parseInt(document.getElementById('s20-reserve').value) || 0;
+    if (rsv20 > 0) items.push({desc: '20日薪資預扣預備金', income: rsv20, expense: 0, target: 'rsv'});
+  }
+
+  return items;
+}
+
+// 開啟載入 Modal
+function openLoadModal(period) {
+  _loadPeriod = period;
+  document.getElementById('load-modal-title').textContent = `📥 ${period}日薪資管理 → 載入至收支明細`;
+
+  // 預設日期：本月 period 日
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const dayStr = String(period).padStart(2, '0');
+  document.getElementById('load-date').value = `${y}-${m}-${dayStr}`;
+
+  updateLoadPreview();
+  document.getElementById('load-modal').classList.add('open');
+}
+
+// 更新載入預覽
+function updateLoadPreview() {
+  const dateStr = document.getElementById('load-date').value;
+  if (!dateStr) { document.getElementById('load-preview').innerHTML = '<span style="color:#888">請選擇日期</span>'; return; }
+
+  // 鳳信提示（只在20日顯示）
+  const fxRow = document.getElementById('load-fengxin-row');
+  fxRow.style.display = (_loadPeriod === '20' && shouldLoadFengxin(dateStr)) ? 'block' : 'none';
+
+  const items = buildLoadItems(_loadPeriod, dateStr);
+  if (!items.length) { document.getElementById('load-preview').innerHTML = '<span style="color:#888">無資料</span>'; return; }
+
+  let html = '<table style="width:100%;border-collapse:collapse">';
+  html += '<tr style="background:#e8eaf0"><th style="padding:5px 8px;text-align:left;font-size:11px">說明</th><th style="padding:5px 8px;text-align:right;font-size:11px">收入</th><th style="padding:5px 8px;text-align:right;font-size:11px">支出</th><th style="padding:5px 8px;text-align:left;font-size:11px">寫入</th></tr>';
+  items.forEach(it => {
+    const inc = it.income ? `<span style="color:#2e7d32;font-weight:600">$${it.income.toLocaleString()}</span>` : '';
+    const exp = it.expense ? `<span style="color:#c62828;font-weight:600">$${it.expense.toLocaleString()}</span>` : '';
+    const tgt = it.target === 'rsv' ? '<span style="color:#7b1fa2">💰預備金管理</span>' : '<span style="color:#1565c0">📋收支明細</span>';
+    html += `<tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px">${it.desc}</td><td style="padding:5px 8px;text-align:right">${inc}</td><td style="padding:5px 8px;text-align:right">${exp}</td><td style="padding:5px 8px">${tgt}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('load-preview').innerHTML = html;
+}
+
+// 確認載入
+function confirmLoad() {
+  const dateStr = document.getElementById('load-date').value;
+  if (!dateStr) { alert('請選擇日期'); return; }
+  const dateFmt = dateStr.replace(/-/g, '/');
+  const items = buildLoadItems(_loadPeriod, dateStr);
+  if (!items.length) { alert('沒有可載入的資料，請先在薪資管理頁填入金額'); return; }
+
+  let monCount = 0, rsvCount = 0;
+
+  items.forEach(it => {
+    // 在 desc 裡附加隱藏標記（期別+日期，方便刪除時識別）
+    const taggedDesc = it.desc + LOAD_TAG + _loadPeriod + ':' + dateFmt;
+
+    if (it.target === 'mon') {
+      monData.push({date: dateFmt, desc: taggedDesc, income: it.income, expense: it.expense, balance: 0});
+      monCount++;
+    } else {
+      const prev = rsvData.length ? rsvData[rsvData.length - 1].balance : 0;
+      rsvData.push({date: dateFmt, desc: taggedDesc, income: it.income, expense: it.expense, balance: prev + it.income - it.expense});
+      rsvCount++;
+    }
+  });
+
+  sortAndRecalcMonthly();
+  // 重算預備金餘額
+  let rBal = 0;
+  rsvData.forEach(r => { rBal = r.income ? rBal + r.income : rBal - r.expense; r.balance = rBal; });
+  save();
+  closeM('load-modal');
+  renderMonthly();
+  refreshDashboard();
+  alert(`✅ 載入完成！\n📋 收支明細：${monCount} 筆\n💰 預備金管理：${rsvCount} 筆\n日期：${dateFmt}`);
+}
+
+// 開啟刪除 Modal
+function openDeleteModal(period) {
+  _loadPeriod = period;
+  document.getElementById('delete-modal-title').textContent = `🗑️ ${period}日薪資管理 → 刪除已載入資料`;
+
+  // 找出所有由本期載入的日期
+  const tagPrefix = LOAD_TAG + period + ':';
+  const dates = new Set();
+  monData.forEach(r => { if (r.desc && r.desc.includes(tagPrefix)) { const m = r.desc.match(/\u0002autoLoaded\u0003\d+:(\d{4}\/\d{2}\/\d{2})/); if(m) dates.add(m[1]); }});
+  rsvData.forEach(r => { if (r.desc && r.desc.includes(tagPrefix)) { const m = r.desc.match(/\u0002autoLoaded\u0003\d+:(\d{4}\/\d{2}\/\d{2})/); if(m) dates.add(m[1]); }});
+
+  const sel = document.getElementById('delete-date-sel');
+  sel.innerHTML = '<option value="">-- 請選擇日期 --</option>';
+  Array.from(dates).sort().reverse().forEach(d => {
+    sel.innerHTML += `<option value="${d}">${d}</option>`;
+  });
+
+  document.getElementById('delete-preview').innerHTML = dates.size ? '<span style="color:#888">請選擇日期以預覽</span>' : '<span style="color:#c62828">目前沒有此期別的載入記錄</span>';
+  document.getElementById('delete-confirm-btn').disabled = true;
+  document.getElementById('delete-modal').classList.add('open');
+}
+
+// 更新刪除預覽
+function updateDeletePreview() {
+  const selDate = document.getElementById('delete-date-sel').value;
+  const btn = document.getElementById('delete-confirm-btn');
+  if (!selDate) { document.getElementById('delete-preview').innerHTML = '<span style="color:#888">請選擇日期</span>'; btn.disabled = true; return; }
+
+  const tagPrefix = LOAD_TAG + _loadPeriod + ':' + selDate;
+  const monItems = monData.filter(r => r.desc && r.desc.includes(tagPrefix));
+  const rsvItems = rsvData.filter(r => r.desc && r.desc.includes(tagPrefix));
+
+  if (!monItems.length && !rsvItems.length) {
+    document.getElementById('delete-preview').innerHTML = '<span style="color:#888">此日期無載入記錄</span>';
+    btn.disabled = true; return;
+  }
+
+  let html = '<table style="width:100%;border-collapse:collapse">';
+  html += '<tr style="background:#fce4e4"><th style="padding:5px 8px;text-align:left;font-size:11px">說明</th><th style="padding:5px 8px;text-align:right;font-size:11px">收入</th><th style="padding:5px 8px;text-align:right;font-size:11px">支出</th><th style="padding:5px 8px;text-align:left;font-size:11px">來源</th></tr>';
+
+  const renderItem = (r, tgt) => {
+    const displayDesc = r.desc.replace(/\u0002autoLoaded\u0003.*$/, '');
+    const inc = r.income ? `<span style="color:#2e7d32;font-weight:600">$${r.income.toLocaleString()}</span>` : '';
+    const exp = r.expense ? `<span style="color:#c62828;font-weight:600">$${r.expense.toLocaleString()}</span>` : '';
+    const tgtLabel = tgt === 'rsv' ? '<span style="color:#7b1fa2">💰預備金</span>' : '<span style="color:#1565c0">📋收支</span>';
+    html += `<tr style="border-bottom:1px solid #fdd"><td style="padding:5px 8px">${displayDesc}</td><td style="padding:5px 8px;text-align:right">${inc}</td><td style="padding:5px 8px;text-align:right">${exp}</td><td style="padding:5px 8px">${tgtLabel}</td></tr>`;
+  };
+
+  monItems.forEach(r => renderItem(r, 'mon'));
+  rsvItems.forEach(r => renderItem(r, 'rsv'));
+  html += '</table>';
+  document.getElementById('delete-preview').innerHTML = html;
+  btn.disabled = false;
+}
+
+// 確認刪除
+function confirmDelete() {
+  const selDate = document.getElementById('delete-date-sel').value;
+  if (!selDate) return;
+  const tagPrefix = LOAD_TAG + _loadPeriod + ':' + selDate;
+
+  const monBefore = monData.length;
+  const rsvBefore = rsvData.length;
+  monData = monData.filter(r => !(r.desc && r.desc.includes(tagPrefix)));
+  rsvData = rsvData.filter(r => !(r.desc && r.desc.includes(tagPrefix)));
+
+  sortAndRecalcMonthly();
+  // 重算預備金餘額
+  let rBal = 0;
+  rsvData.forEach(r => { rBal = r.income ? rBal + r.income : rBal - r.expense; r.balance = rBal; });
+  save();
+  closeM('delete-modal');
+  renderMonthly();
+  refreshDashboard();
+  const delMon = monBefore - monData.length;
+  const delRsv = rsvBefore - rsvData.length;
+  alert(`✅ 刪除完成！\n📋 收支明細刪除：${delMon} 筆\n💰 預備金刪除：${delRsv} 筆`);
+}
+
+
+// =============================================
+// 信任裝置管理
+// =============================================
+const TRUST_KEY = 'mfTrustedDevices';
+const THIS_DEVICE_KEY = 'mfThisDeviceId';
+const MAX_TRUSTED = 2;
+
+function getThisDeviceId() {
+  let id = localStorage.getItem(THIS_DEVICE_KEY);
+  if (!id) {
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    localStorage.setItem(THIS_DEVICE_KEY, id);
+  }
+  return id;
+}
+
+function getTrustedDevices() {
+  try { return JSON.parse(localStorage.getItem(TRUST_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function saveTrustedDevices(list) {
+  localStorage.setItem(TRUST_KEY, JSON.stringify(list));
+}
+
+function isThisDeviceTrusted() {
+  const id = getThisDeviceId();
+  return getTrustedDevices().some(d => d.id === id);
+}
+
+function trustThisDevice() {
+  const id = getThisDeviceId();
+  let list = getTrustedDevices();
+  if (list.some(d => d.id === id)) { alert('此裝置已在信任清單中！'); renderTrustedDevices(); return; }
+  if (list.length >= MAX_TRUSTED) { alert(`最多只能信任 ${MAX_TRUSTED} 台裝置。\n請先從清單中移除一台，再加入此裝置。`); return; }
+  const ua = navigator.userAgent;
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(ua);
+  const label = isMobile ? '📱 手機' : '💻 電腦';
+  const name = prompt(`請輸入此裝置的名稱（例：我的手機）：`, label + '（' + new Date().toLocaleDateString('zh-TW') + '）');
+  if (!name) return;
+  list.push({ id, name, trusted: true, addedAt: new Date().toLocaleString('zh-TW', {timeZone:'Asia/Taipei'}) });
+  saveTrustedDevices(list);
+  renderTrustedDevices();
+  alert('✅ 已加入信任裝置！');
+}
+
+function removeTrustedDevice(id) {
+  if (!confirm('確定要移除此信任裝置？\n移除後，該裝置下次開啟時需重新登入。')) return;
+  let list = getTrustedDevices().filter(d => d.id !== id);
+  saveTrustedDevices(list);
+  if (id === getThisDeviceId()) {
+    localStorage.removeItem(THIS_DEVICE_KEY);
+  }
+  renderTrustedDevices();
+}
+
+function renderTrustedDevices() {
+  const el = document.getElementById('trusted-device-list');
+  if (!el) return;
+  const list = getTrustedDevices();
+  const thisId = getThisDeviceId();
+  if (!list.length) {
+    el.innerHTML = '<div class="alert alert-warning">目前沒有任何信任裝置。點擊下方按鈕將此裝置加入信任清單。</div>';
+    return;
+  }
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+  html += '<tr style="background:#f8f9fb"><th style="padding:8px 10px;text-align:left">裝置名稱</th><th style="padding:8px 10px;text-align:left">加入時間</th><th style="padding:8px 10px;text-align:left">狀態</th><th style="padding:8px 10px;width:80px">操作</th></tr>';
+  list.forEach(d => {
+    const isCurrent = d.id === thisId;
+    html += `<tr style="border-bottom:1px solid #f0f2f5">
+      <td style="padding:8px 10px">${d.name}${isCurrent?' <span style="font-size:11px;color:#1565c0;background:#e3f2fd;padding:2px 6px;border-radius:10px">目前這台</span>':''}</td>
+      <td style="padding:8px 10px;color:#888">${d.addedAt||'-'}</td>
+      <td style="padding:8px 10px"><span style="color:#2e7d32">✅ 信任</span></td>
+      <td style="padding:8px 10px"><button class="btn btn-danger btn-sm" onclick="removeTrustedDevice('${d.id}')">移除</button></td>
+    </tr>`;
+  });
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+// 開啟後台設定頁時重新渲染信任裝置列表
+const _origShowPage = showPage;
+showPage = function(id, el) {
+  _origShowPage(id, el);
+  if (id === 'settings') {
+    renderTrustedDevices();
+    // 載入忘記密碼提示
+    const hint = localStorage.getItem('mfForgotHint') || '';
+    const hintEl = document.getElementById('cfg-forgot-hint');
+    if (hintEl) hintEl.value = hint;
+  }
+};
+
+// =============================================
+// 忘記密碼提示
+// =============================================
+function saveForgotHint() {
+  const hint = (document.getElementById('cfg-forgot-hint').value || '').trim();
+  localStorage.setItem('mfForgotHint', hint);
+  const saved = document.getElementById('cfg-forgot-saved');
+  saved.style.display = 'inline';
+  setTimeout(() => { saved.style.display = 'none'; }, 2000);
+}
+
+function fbShowForgotHint() {
+  const hint = localStorage.getItem('mfForgotHint') || '';
+  const el = document.getElementById('fb-forgot-hint');
+  if (!hint) { el.style.display = 'block'; el.innerHTML = '<span style="color:#ffcc80">尚未設定提示，請登入後至後台設定中填寫。</span>'; return; }
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  el.innerHTML = '&#x1F511; 提示：' + hint.replace(/\n/g, '<br>');
+}
+
+init();
+
+// =============================================
+// Firebase 雲端同步（REST API，不需外部SDK）
+// =============================================
+const FB = {
+  apiKey:  'AIzaSyB0REZhYzGCpmC8eFEBJxLZNvwqHuO5URY',
+  dbUrl:   'https://yun-finance-default-rtdb.asia-southeast1.firebasedatabase.app',
+  authUrl: 'https://identitytoolkit.googleapis.com/v1',
+  path:    'meiyun/data'
+};
+let fbToken = null, fbTimer = null, fbUid = null;
+
+// ---- 狀態列 ----
+function fbBar(state, msg) {
+  const bar = document.getElementById('fb-bar');
+  const txt = document.getElementById('fb-msg');
+  bar.style.display = 'flex';
+  bar.className = 'st-' + state;
+  txt.textContent = msg;
+}
+
+// ---- 密碼顯示/隱藏 ----
+function fbTogglePw() {
+  const inp = document.getElementById('fb-pw');
+  const btn = document.getElementById('fb-pw-eye');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+// ---- 登入（用 Firebase Auth REST API）----
+function fbLogin() {
+  const email = document.getElementById('fb-email').value.trim();
+  const pw    = document.getElementById('fb-pw').value;
+  const err   = document.getElementById('fb-err');
+  const btn   = document.getElementById('fb-login-btn');
+  if (!email || !pw) { err.textContent = '請填寫電子郵件和密碼'; return; }
+  err.textContent = ''; btn.textContent = '登入中...'; btn.disabled = true;
+  fetch(`${FB.authUrl}/accounts:signInWithPassword?key=${FB.apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pw, returnSecureToken: true })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.error) throw new Error(d.error.message);
+    fbToken = d.idToken;
+    fbUid   = d.localId;
+    localStorage.setItem('fbToken', fbToken);
+    localStorage.setItem('fbUid',   fbUid);
+    fbEnter();
+  })
+  .catch(() => {
+    err.textContent = '帳號或密碼錯誤，請再試一次';
+    btn.textContent = '登入'; btn.disabled = false;
+  });
+}
+
+// ---- 登入後進入系統 ----
+function fbEnter() {
+  document.getElementById('fb-cover').style.display = 'none';
+  document.body.classList.add('fb-loggedin');
+  fbBar('init', '🔄 正在從雲端下載資料...');
+  fbDownload();
+}
+
+// ---- 登出 ----
+function fbLogout() {
+  if (!confirm('確定要登出嗎？')) return;
+  fbToken = null; fbUid = null;
+  localStorage.removeItem('fbToken');
+  localStorage.removeItem('fbUid');
+  document.getElementById('fb-cover').style.display = 'flex';
+  document.body.classList.remove('fb-loggedin');
+  document.getElementById('fb-bar').style.display = 'none';
+  document.getElementById('fb-pw').value = '';
+  document.getElementById('fb-err').textContent = '';
+  document.getElementById('fb-login-btn').textContent = '登入';
+  document.getElementById('fb-login-btn').disabled = false;
+}
+
+// ---- 上傳資料 ----
+function fbUpload(manual) {
+  if (!fbToken) return;
+  fbBar('sync', '🔄 正在上傳至雲端...');
+  const data = {
+    debt: debtData, mon: monData, rsv: rsvData,
+    settings: JSON.parse(localStorage.getItem('mfSettings5') || '{}'),
+    updatedAt: Date.now()
+  };
+  fetch(`${FB.dbUrl}/${FB.path}.json?auth=${fbToken}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(() => {
+    localStorage.setItem('mfUpdatedAt', String(data.updatedAt));
+    fbBar('ok', '☁️ 雲端同步完成　' + new Date().toLocaleTimeString('zh-TW', {timeZone:'Asia/Taipei'}));
+  })
+  .catch(() => fbBar('err', '⚠️ 上傳失敗，請檢查網路'));
+}
+
+// ---- 下載資料 ----
+function fbDownload() {
+  if (!fbToken) return;
+  fetch(`${FB.dbUrl}/${FB.path}.json?auth=${fbToken}`)
+  .then(r => {
+    if (r.status === 401) { fbLogout(); return null; }
+    return r.json();
+  })
+  .then(cloud => {
+    if (!cloud) return;
+    const localTs = parseInt(localStorage.getItem('mfUpdatedAt') || '0');
+    const cloudTs = cloud.updatedAt || 0;
+    if (cloudTs > localTs) {
+      if (cloud.debt) { debtData = cloud.debt; localStorage.setItem(DK, JSON.stringify(debtData)); }
+      if (cloud.mon)  { monData  = cloud.mon;  localStorage.setItem(MK, JSON.stringify(monData)); }
+      if (cloud.rsv)  { rsvData  = cloud.rsv;  localStorage.setItem(RK, JSON.stringify(rsvData)); }
+      if (cloud.settings) localStorage.setItem('mfSettings5', JSON.stringify(cloud.settings));
+      localStorage.setItem('mfUpdatedAt', String(cloudTs));
+      sortAndRecalcMonthly(); sortAndRecalcDebt();
+      loadAllSavedSettings(); refreshDashboard();
+      fbBar('ok', '⬇️ 已下載最新雲端資料　' + new Date().toLocaleTimeString('zh-TW', {timeZone:'Asia/Taipei'}));
+    } else {
+      fbUpload(false);
+    }
+  })
+  .catch(() => fbBar('err', '⚠️ 下載失敗，請檢查網路'));
+}
+
+// ---- 修改後防抖上傳 ----
+function fbSchedule() {
+  clearTimeout(fbTimer);
+  fbTimer = setTimeout(() => fbUpload(false), 1500);
+}
+
+// ---- 攔截原本的 save() ----
+const _origSave = save;
+save = function() { _origSave(); fbSchedule(); };
+
+// ---- 攔截 autoSaveSettings ----
+const _origAutoSave = autoSaveSettings;
+autoSaveSettings = function() { _origAutoSave(); fbSchedule(); };
+
+// ---- 封面照片（IndexedDB，不受 5MB 限制）----
+function fbIdbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('mfCover', 1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('p', { keyPath: 'id' });
+    r.onsuccess = e => res(e.target.result);
+    r.onerror   = e => rej(e);
+  });
+}
+function fbCoverPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const lbl = document.getElementById('fb-photo-label');
+  lbl.textContent = '⏳ 載入中...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    document.getElementById('fb-cover-photo').style.backgroundImage = `url(${url})`;
+    fbIdbOpen().then(db => {
+      const tx = db.transaction('p', 'readwrite');
+      tx.objectStore('p').put({ id: 'cover', data: url });
+      tx.oncomplete = () => { lbl.textContent = '✅ 封面已儲存'; };
+      tx.onerror    = () => { lbl.textContent = '⚠️ 儲存失敗'; };
+    });
+  };
+  reader.onerror = () => { lbl.textContent = '⚠️ 讀取失敗'; };
+  reader.readAsDataURL(file);
+}
+// 開啟時自動載入封面照片
+fbIdbOpen().then(db => {
+  const r = db.transaction('p').objectStore('p').get('cover');
+  r.onsuccess = e => {
+    if (e.target.result) {
+      document.getElementById('fb-cover-photo').style.backgroundImage = `url(${e.target.result.data})`;
+    }
+  };
+}).catch(() => {});
+
+// ---- 自動登入（記住上次的 token）----
+(function() {
+  const t = localStorage.getItem('fbToken');
+  const u = localStorage.getItem('fbUid');
+  if (t && u) {
+    fbToken = t; fbUid = u;
+    // 驗證 token 是否還有效
+    fetch(`${FB.dbUrl}/${FB.path}/updatedAt.json?auth=${t}`)
+    .then(r => {
+      if (r.status === 401) { fbLogout(); }
+      else { fbEnter(); }
+    })
+    .catch(() => { fbEnter(); }); // 網路問題時仍允許進入（使用本機資料）
+  }
+})();
+</script>
+</body>
+</html>
