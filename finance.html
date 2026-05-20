@@ -139,10 +139,10 @@ body.fb-loggedin .sidebar{top:28px;height:calc(100vh - 28px);}
     <input type="file" id="fb-photo-input" accept="image/*" onchange="fbCoverPhoto(this)">
     <div id="fb-login-panel">
       <input type="email" id="fb-email" placeholder="📧 電子郵件" autocomplete="username">
-      <div id="fb-pw-wrap">
-        <input type="password" id="fb-pw" placeholder="🔒 密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')fbLogin()">
-        <button type="button" id="fb-pw-eye" onclick="fbTogglePw()" title="顯示/隱藏密碼" tabindex="-1">👁️</button>
-      </div>
+      <input type="password" id="fb-pw" placeholder="🔒 密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')fbLogin()">
+      <label style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.75);font-size:13px;cursor:pointer;margin-top:-4px;margin-bottom:8px;user-select:none">
+        <input type="checkbox" id="fb-pw-show" onchange="fbTogglePw()" style="width:15px;height:15px;cursor:pointer;accent-color:#64b5f6"> 顯示密碼
+      </label>
       <div id="fb-err"></div>
       <div id="fb-forgot-hint" style="display:none;background:rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13px;color:#fff;line-height:1.6"></div>
       <div style="text-align:right;margin-bottom:8px">
@@ -2003,8 +2003,9 @@ function fbBar(state, msg) {
 // ---- 密碼顯示/隱藏 ----
 function fbTogglePw() {
   const inp = document.getElementById('fb-pw');
-  const btn = document.getElementById('fb-pw-eye');
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  const cb  = document.getElementById('fb-pw-show');
+  inp.type = cb.checked ? 'text' : 'password';
+}
   else { inp.type = 'password'; btn.textContent = '👁️'; }
 }
 
