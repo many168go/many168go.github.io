@@ -90,6 +90,85 @@ tr:hover td { background: #fafbfc; }
 .confirm-btns { display: flex; gap: 10px; justify-content: center; }
 input[type="number"] { -moz-appearance: textfield; }
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ===== 手機響應式 RWD ===== */
+@media (max-width: 768px) {
+  /* 側邊欄改為底部導覽列 */
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: fixed !important;
+    left: 0 !important; bottom: 0 !important; top: auto !important;
+    flex-direction: row !important;
+    z-index: 200 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .sidebar-logo { display: none !important; }
+  .sidebar-logout { position: static !important; border-top: none !important; padding: 0 !important; }
+  .sidebar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    padding: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  .nav-section { display: none !important; }
+  .nav-item {
+    flex-direction: column !important;
+    padding: 8px 10px !important;
+    font-size: 10px !important;
+    gap: 2px !important;
+    white-space: nowrap !important;
+    border-left: none !important;
+    border-top: 3px solid transparent !important;
+    min-width: 60px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  .nav-item.active { border-top-color: #64b5f6 !important; border-left-color: transparent !important; }
+
+  /* 主內容區 */
+  .main {
+    margin-left: 0 !important;
+    padding: 12px 10px 80px 10px !important;
+  }
+  body.fb-loggedin .sidebar { top: auto !important; height: auto !important; }
+
+  /* 卡片格線 */
+  .cards-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .two-col { grid-template-columns: 1fr !important; gap: 10px !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .form-full { grid-column: 1 !important; }
+
+  /* 字體與間距 */
+  .page-title { font-size: 16px !important; }
+  .metric-value { font-size: 18px !important; }
+  .section-header { flex-wrap: wrap; gap: 6px; }
+  table { font-size: 11px !important; }
+  th, td { padding: 6px 6px !important; }
+
+  /* Topbar */
+  .topbar { flex-wrap: wrap; gap: 8px; }
+
+  /* Modal */
+  .modal { width: 95vw !important; padding: 16px !important; }
+
+  /* 狀態列 */
+  #fb-bar { font-size: 11px !important; padding: 4px 10px !important; }
+  body.fb-loggedin { padding-top: 24px !important; }
+}
+
+@media (max-width: 480px) {
+  .cards-grid { grid-template-columns: 1fr 1fr !important; }
+  .metric-card { padding: 10px !important; }
+  .metric-value { font-size: 15px !important; }
+  .metric-label { font-size: 10px !important; }
+  .btn { font-size: 12px !important; padding: 7px 12px !important; }
+}
 </style>
 <style>
 /* ===== 封面頁 ===== */
